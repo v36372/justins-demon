@@ -1,1 +1,1 @@
-web: bin/justins-demon
+web: ./crawler

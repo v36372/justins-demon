@@ -113,9 +113,9 @@ func crawlVP() {
 		var kellyA, kellyB float32
 
 		if existedMatch.A == match.VpTeams.Left.Name {
-			kellyA, kellyB = calculateKelly(vpOddA, vpOddB, existedMatch.AverageA, existedMatch.AverageB)
+			kellyA, kellyB = calculateKelly(vpOddA+1, vpOddB+1, existedMatch.AverageA, existedMatch.AverageB)
 		} else {
-			kellyB, kellyA = calculateKelly(vpOddA, vpOddB, existedMatch.AverageB, existedMatch.AverageA)
+			kellyB, kellyA = calculateKelly(vpOddA+1, vpOddB+1, existedMatch.AverageB, existedMatch.AverageA)
 		}
 
 		var betAmount float32

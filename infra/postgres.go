@@ -2,13 +2,14 @@ package infra
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/jinzhu/gorm"
 )
 
 var PostgreSql *gorm.DB
 
-func InitPostgreSQL() {
+func InitPostgreSQL(heroku bool) {
 	source := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		"postgres",
 		"postgres",
@@ -17,6 +18,9 @@ func InitPostgreSQL() {
 		"postgres",
 	)
 	var err error
+	if heroku {
+		source = os.Getenv("DATABASE_URL")
+	}
 	PostgreSql, err = gorm.Open("postgres", source)
 	if err != nil {
 		panic(err)

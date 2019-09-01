@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sad/infra"
 	"sad/models"
 	"strconv"
@@ -763,7 +764,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	c := cron.New()
-	infra.InitPostgreSQL()
+	heroku, _ := strconv.ParseBool(os.Getenv("USE_HEROKU"))
+
+	infra.InitPostgreSQL(heroku)
 	// crawlTeam()
 	c.AddFunc("@every 2m", crawlOdds)
 	c.AddFunc("@every 1m", crawlVP)

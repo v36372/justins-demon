@@ -774,6 +774,6 @@ func main() {
 	c.Start()
 
 	http.HandleFunc("/", handler)
-	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
+	port := ":" + os.Getenv("PORT")
+	log.Fatal(http.ListenAndServe(port, nil))
 }

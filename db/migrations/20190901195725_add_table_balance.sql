@@ -3,6 +3,7 @@
 -- SQL in section 'Up' is executed when this migration is applied
 
 create table balances (
+	id serial primary key,
 	total float
 );
 

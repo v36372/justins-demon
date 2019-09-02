@@ -141,6 +141,7 @@ type MatchOdd struct {
 }
 
 type Balance struct {
+	Id    int
 	Total float32
 }
 

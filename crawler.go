@@ -150,7 +150,7 @@ func crawlVP() {
 		existedMatch.Amount = amount
 		existedMatch.PlayedOdd = playedOdd
 
-		infra.PostgreSql.Model(models.Balance{}).Update("total = ?", balance.Total)
+		infra.PostgreSql.Save(&balance)
 		infra.PostgreSql.Save(&existedMatch)
 	}
 }
@@ -725,10 +725,10 @@ func crawlResult() {
 				}
 
 				scoreA := e.ChildText("div:first-child div div.won")
-				scoreB := e.Attr("div:last-child div div.lost")
+				scoreB := e.ChildText("div:last-child div div.lost")
 				if scoreA == "" {
 					scoreA = e.ChildText("div:first-child div div.lost")
-					scoreB = e.Attr("div:last-child div div.won")
+					scoreB = e.ChildText("div:last-child div div.won")
 				}
 				fmt.Println(scoreA, scoreB)
 
@@ -752,12 +752,13 @@ func crawlResult() {
 					balance.Total += m.Amount + m.Amount*m.PlayedOdd
 				} else if !m.BetOnA && !aWon {
 					m.Won = true
+					balance.Total += m.Amount + m.Amount*m.PlayedOdd
 				}
 
 				m.Finished = true
 
 				infra.PostgreSql.Save(&m)
-				infra.PostgreSql.Model(models.Balance{}).Update("total = ?", balance.Total)
+				infra.PostgreSql.Save(&balance)
 
 			})
 

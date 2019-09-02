@@ -719,16 +719,17 @@ func crawlResult() {
 
 			c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
 				eta := e.ChildText("div.timeAndEvent div.countdown")
-				fmt.Println(eta)
-				fmt.Println(e.Text)
-				fmt.Println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 				if eta != "Match over" {
 					return
 				}
 
-				scoreA := e.ChildText("div:first-child div div")
-				scoreB := e.ChildText("div:last-child div div")
+				scoreA := e.ChildText("div:first-child div div.won")
+				scoreB := e.Attr("div:last-child div div.lost")
+				if scoreA == "" {
+					scoreA = e.ChildText("div:first-child div div.lost")
+					scoreB = e.Attr("div:last-child div div.won")
+				}
 				fmt.Println(scoreA, scoreB)
 
 				if scoreA == "" && scoreB == "" {

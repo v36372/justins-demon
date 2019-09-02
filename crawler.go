@@ -136,6 +136,9 @@ func crawlVP() {
 		if betAmount < 1 {
 			betAmount = betAmount * 4
 		}
+		if betAmount < 1 {
+			continue
+		}
 
 		var balance models.Balance
 		infra.PostgreSql.Model(models.Balance{}).Find(&balance)
@@ -702,7 +705,6 @@ func crawlOdds() {
 
 func crawlResult() {
 	onGoingMatches := []models.MatchOdd{}
-	c := colly.NewCollector()
 
 	infra.PostgreSql.Model(models.MatchOdd{}).Where("finished = false").Where("amount > 0").Find(&onGoingMatches)
 	balance := models.Balance{}
@@ -711,6 +713,7 @@ func crawlResult() {
 
 	for _, m := range onGoingMatches {
 		go func() {
+			c := colly.NewCollector()
 
 			c.Visit(hltvDomain + m.Link)
 
@@ -762,7 +765,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	onGoingMatches := []models.MatchOdd{}
 	balance := models.Balance{}
 
-	infra.PostgreSql.Model(models.MatchOdd{}).Where("amount > 0").Find(&onGoingMatches)
+	infra.PostgreSql.Model(models.MatchOdd{}).Where("amount > 0").Order("created_at desc").Find(&onGoingMatches)
 	infra.PostgreSql.Model(models.Balance{}).Find(&balance)
 	fmt.Fprintf(w, "Current bankroll %f\n", balance.Total)
 

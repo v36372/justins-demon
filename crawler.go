@@ -718,7 +718,7 @@ func crawlResult() {
 			fmt.Println(m.Link)
 			c.Visit(hltvDomain + m.Link)
 
-			c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
+			c.OnHTML("div.standard-box.teamsBox", func(e *colly.HTMLElement) {
 				eta := e.ChildText("div.timeAndEvent div.countdown")
 				fmt.Println(eta)
 				if eta != "Match over" {

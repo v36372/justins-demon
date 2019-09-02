@@ -120,6 +120,10 @@ func crawlVP() {
 			kellyB, kellyA = calculateKelly(vpOddA+1, vpOddB+1, existedMatch.AverageB, existedMatch.AverageA)
 		}
 
+		if kellyA < 0 && kellyB < 0 {
+			continue
+		}
+
 		var betAmount float32
 		var playedOdd float32
 		betAmount = kellyB / 400 // Quarter kelly
@@ -706,6 +710,7 @@ func crawlResult() {
 
 		c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
 			eta := e.ChildText("div.timeAndEvent div.countdown")
+			fmt.Println(eta)
 			if eta != "Match over" {
 				return
 			}

@@ -682,7 +682,7 @@ func crawlOdds() {
 		infra.PostgreSql.Model(models.MatchOdd{}).Where("link = ?", matchLink).Order("created_at desc").Limit(1).Find(&existedMatch)
 		if existedMatch.OddsA != match.OddsA || existedMatch.OddsB != match.OddsB {
 			// if existedMatch.Id == 0 {
-			err := infra.PostgreSql.Create(&match).Error
+			err := infra.PostgreSql.Save(&match).Error
 			if err != nil {
 				fmt.Println(err)
 			}

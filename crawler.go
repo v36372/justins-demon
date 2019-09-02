@@ -710,47 +710,51 @@ func crawlResult() {
 	infra.PostgreSql.Model(models.Balance{}).Find(&balance)
 
 	for _, m := range onGoingMatches {
-		c.Visit(hltvDomain + m.Link)
+		go func() {
 
-		c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
-			eta := e.ChildText("div.timeAndEvent div.countdown")
-			fmt.Println(m.Link)
-			fmt.Println(eta)
-			if eta != "Match over" {
-				return
-			}
+			c.Visit(hltvDomain + m.Link)
 
-			scoreA := e.ChildText("div:first-child div div")
-			scoreB := e.ChildText("div:last-child div div")
-			fmt.Println(scoreA, scoreB)
+			c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
+				eta := e.ChildText("div.timeAndEvent div.countdown")
+				fmt.Println(m.Link)
+				fmt.Println(eta)
+				if eta != "Match over" {
+					return
+				}
 
-			if scoreA == "" && scoreB == "" {
-				return
-			}
+				scoreA := e.ChildText("div:first-child div div")
+				scoreB := e.ChildText("div:last-child div div")
+				fmt.Println(scoreA, scoreB)
 
-			numA, _ := strconv.Atoi(scoreA)
-			numB, _ := strconv.Atoi(scoreB)
-			aWon := false
+				if scoreA == "" && scoreB == "" {
+					return
+				}
 
-			if numA > numB {
-				aWon = true
-			}
+				numA, _ := strconv.Atoi(scoreA)
+				numB, _ := strconv.Atoi(scoreB)
+				aWon := false
 
-			m.ScoreA = numA
-			m.ScoreB = numB
+				if numA > numB {
+					aWon = true
+				}
 
-			if m.BetOnA && aWon {
-				m.Won = true
-				balance.Total += m.Amount + m.Amount*m.PlayedOdd
-			} else if !m.BetOnA && !aWon {
-				m.Won = true
-			}
+				m.ScoreA = numA
+				m.ScoreB = numB
 
-			m.Finished = true
+				if m.BetOnA && aWon {
+					m.Won = true
+					balance.Total += m.Amount + m.Amount*m.PlayedOdd
+				} else if !m.BetOnA && !aWon {
+					m.Won = true
+				}
 
-			infra.PostgreSql.Save(&m)
-			infra.PostgreSql.Model(models.Balance{}).Update("total = ?", balance.Total)
-		})
+				m.Finished = true
+
+				infra.PostgreSql.Save(&m)
+				infra.PostgreSql.Model(models.Balance{}).Update("total = ?", balance.Total)
+
+			})
+		}()
 	}
 }
 

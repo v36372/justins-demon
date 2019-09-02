@@ -133,6 +133,9 @@ func crawlVP() {
 			betAmount = kellyA / 400
 			playedOdd = vpOddA
 		}
+		if betAmount < 1 {
+			betAmount = betAmount * 4
+		}
 
 		var balance models.Balance
 		infra.PostgreSql.Model(models.Balance{}).Find(&balance)
@@ -144,7 +147,7 @@ func crawlVP() {
 		existedMatch.Amount = amount
 		existedMatch.PlayedOdd = playedOdd
 
-		infra.PostgreSql.Save(&balance)
+		infra.PostgreSql.Model(models.Balance{}).Update("total = ?", balance.Total)
 		infra.PostgreSql.Save(&existedMatch)
 	}
 }
@@ -686,6 +689,7 @@ func crawlOdds() {
 		infra.PostgreSql.Model(models.MatchOdd{}).Where("link = ?", matchLink).Order("created_at desc").Limit(1).Find(&existedMatch)
 		if existedMatch.OddsA != match.OddsA || existedMatch.OddsB != match.OddsB {
 			// if existedMatch.Id == 0 {
+			match.Id = existedMatch.Id
 			err := infra.PostgreSql.Save(&match).Error
 			if err != nil {
 				fmt.Println(err)
@@ -745,7 +749,7 @@ func crawlResult() {
 			m.Finished = true
 
 			infra.PostgreSql.Save(&m)
-			infra.PostgreSql.Save(&balance)
+			infra.PostgreSql.Model(models.Balance{}).Update("total = ?", balance.Total)
 		})
 	}
 }

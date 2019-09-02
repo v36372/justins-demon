@@ -716,7 +716,6 @@ func crawlResult() {
 			c := colly.NewCollector()
 
 			fmt.Println(m.Link)
-			c.Visit(hltvDomain + m.Link)
 
 			c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
 				eta := e.ChildText("div.timeAndEvent div.countdown")
@@ -760,6 +759,8 @@ func crawlResult() {
 				infra.PostgreSql.Model(models.Balance{}).Update("total = ?", balance.Total)
 
 			})
+
+			c.Visit(hltvDomain + m.Link)
 		}()
 	}
 }

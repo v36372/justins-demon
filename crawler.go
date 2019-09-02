@@ -694,7 +694,7 @@ func crawlResult() {
 	onGoingMatches := []models.MatchOdd{}
 	c := colly.NewCollector()
 
-	infra.PostgreSql.Model(models.MatchOdd{}).Where("finished = false").Find(&onGoingMatches)
+	infra.PostgreSql.Model(models.MatchOdd{}).Where("finished = false").Where("amount > 0").Find(&onGoingMatches)
 	balance := models.Balance{}
 
 	infra.PostgreSql.Model(models.Balance{}).Find(&balance)
@@ -702,7 +702,7 @@ func crawlResult() {
 	for _, m := range onGoingMatches {
 		c.Visit(m.Link)
 
-		c.OnHTML(".standard-box teamsBox", func(e *colly.HTMLElement) {
+		c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
 			scoreA := e.ChildText("div:first-child div div")
 			scoreB := e.ChildText("div:last-child div div")
 
@@ -770,7 +770,7 @@ func main() {
 	// crawlTeam()
 	c.AddFunc("@every 2m", crawlOdds)
 	c.AddFunc("@every 1m", crawlVP)
-	c.AddFunc("@every 10m", crawlResult)
+	c.AddFunc("@every 1m", crawlResult)
 	c.Start()
 
 	http.HandleFunc("/", handler)

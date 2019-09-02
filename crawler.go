@@ -736,7 +736,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	onGoingMatches := []models.MatchOdd{}
 	balance := models.Balance{}
 
-	infra.PostgreSql.Model(models.MatchOdd{}).Where("finished = false").Where("amount > 0").Find(&onGoingMatches)
+	infra.PostgreSql.Model(models.MatchOdd{}).Where("amount > 0").Find(&onGoingMatches)
 	infra.PostgreSql.Model(models.Balance{}).Find(&balance)
 	fmt.Fprintf(w, "Current bankroll %f\n", balance.Total)
 

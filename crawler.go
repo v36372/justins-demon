@@ -700,7 +700,7 @@ func crawlResult() {
 	infra.PostgreSql.Model(models.Balance{}).Find(&balance)
 
 	for _, m := range onGoingMatches {
-		c.Visit(m.Link)
+		c.Visit(hltvDomain + m.Link)
 
 		c.OnHTML(".standard-box.teamsBox", func(e *colly.HTMLElement) {
 			scoreA := e.ChildText("div:first-child div div")

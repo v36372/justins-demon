@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
 	_ "github.com/lib/pq"
@@ -67,6 +68,7 @@ type VPgameMatch struct {
 	ScheduleId   int            `json:"schedule_id"`
 	VpScheduleId int            `json:"vp_schedule_id"`
 	VpTeams      VpTeams        `json:"teams"`
+	StartTime    int64          `json:"start_time"`
 	Predictions  []VpPrediction `json:"predictions"`
 }
 
@@ -90,7 +92,7 @@ func crawlVP() {
 			Order("created_at desc").
 			Limit(1).
 			Find(&existedMatch)
-		if existedMatch.Id == 0 || existedMatch.Amount > 0 {
+		if existedMatch.Id == 0 || time.Until(time.Unix(match.StartTime, 0)).Minutes() < 1 {
 			continue
 		}
 
@@ -132,7 +134,7 @@ func crawlVP() {
 		infra.PostgreSql.Model(models.Balance{}).Find(&balance)
 
 		amount := balance.Total * betAmount
-		balance.Total -= amount
+		balance.Total = balance.Total + existedMatch.Amount - amount
 		existedMatch.KellyA = kellyA
 		existedMatch.KellyB = kellyB
 		existedMatch.Amount = amount
@@ -678,8 +680,8 @@ func crawlOdds() {
 
 		var existedMatch models.MatchOdd
 		infra.PostgreSql.Model(models.MatchOdd{}).Where("link = ?", matchLink).Order("created_at desc").Limit(1).Find(&existedMatch)
-		// if existedMatch.OddsA != match.OddsA || existedMatch.OddsB != match.OddsB {
-		if existedMatch.Id == 0 {
+		if existedMatch.OddsA != match.OddsA || existedMatch.OddsB != match.OddsB {
+			// if existedMatch.Id == 0 {
 			err := infra.PostgreSql.Create(&match).Error
 			if err != nil {
 				fmt.Println(err)

@@ -121,6 +121,9 @@ func crawlVP() {
 		}
 
 		if kellyA < 0 && kellyB < 0 {
+			existedMatch.KellyA = kellyA
+			existedMatch.KellyB = kellyB
+			infra.PostgreSql.Save(&existedMatch)
 			continue
 		}
 
@@ -136,9 +139,9 @@ func crawlVP() {
 		if betAmount < 1 {
 			betAmount = betAmount * 4
 		}
-		if betAmount < 1 {
-			continue
-		}
+		// if betAmount < 1 {
+		// 	continue
+		// }
 
 		var balance models.Balance
 		infra.PostgreSql.Model(models.Balance{}).Find(&balance)

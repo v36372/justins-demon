@@ -116,6 +116,16 @@ type Match struct {
 	B_fk        string
 	A_cw        string
 	B_cw        string
+	Pp_a1       Pp
+	Pp_a2       Pp
+	Pp_a3       Pp
+	Pp_a4       Pp
+	Pp_a5       Pp
+	Pp_b1       Pp
+	Pp_b2       Pp
+	Pp_b3       Pp
+	Pp_b4       Pp
+	Pp_b5       Pp
 }
 
 type MatchOdd struct {
@@ -155,4 +165,43 @@ type ComingMatch struct {
 	MapStats      string
 	APastMatches  string
 	BPastMatches  string
+}
+
+type Datapoint struct {
+	Id             int
+	SeriesId       string
+	Url            string
+	SeriesType     string
+	A              string
+	B              string
+	Mapname        string
+	A_f5r          bool
+	B_f5r          bool
+	A_t_pistol     bool
+	A_ct_pistol    bool
+	B_t_pistol     bool
+	B_ct_pistol    bool
+	A_t            string
+	B_ct           string
+	A_ct           string
+	B_t            string
+	Match_a1       Match
+	Match_a2       Match
+	Match_a3       Match
+	Match_a4       Match
+	Match_a5       Match
+	Match_b1       Match
+	Match_b2       Match
+	Match_b3       Match
+	Match_b4       Match
+	Match_b5       Match
+	Match_a_map_1  Match
+	Match_a_map_2  Match
+	Match_a_map_3  Match
+	Match_b_map_1  Match
+	Match_b_map_2  Match
+	Match_b_map_3  Match
+	Match_a_vs_b_1 Match
+	Match_a_vs_b_2 Match
+	Match_a_vs_b_3 Match
 }

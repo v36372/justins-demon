@@ -14,7 +14,7 @@ var test
 const express = require("express");
 var app = express();
 
-initD(function (err) {
+initDb(function (err) {
   app.listen(PORT, function (err) {
     if (err) {
       throw err; //
@@ -54,7 +54,7 @@ app.get("/crawl", (req, res, next) => {
   const db = getDb().db();
   HLTV.getMatchesStats({startDate: req.start+"&rankingFilter=Top30", endDate: req.end}).then((matches) => {
     if (matches.length > 0) {
-      matches.forEach(fundtion(item){
+      matches.forEach(function(item){
         var exist = false;
         db.collection('match_maps').findOne({id: item.id}, function(err, result){
           if (result !== null) exist = true;

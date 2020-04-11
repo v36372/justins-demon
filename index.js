@@ -52,7 +52,7 @@ app.get("/crawl", (req, res, next) => {
   // res.json(teamStats);
   // })
   const db = getDb().db();
-  HLTV.getMatchesStats({startDate: req.start, endDate: req.end}).then((matches) => {
+  HLTV.getMatchesStats({startDate: req.start+"&rankingFilter=Top30", endDate: req.end}).then((matches) => {
     if (matches.length > 0) {
       db.collection('match_maps').insertMany(matches, function(err, res) {
         if (err) {

@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"justins-demon/infra"
+	"justins-demon/models"
 	"math/rand"
 	"os"
 	"reflect"
-	"sad/infra"
-	"sad/models"
 	"strconv"
 	"time"
 

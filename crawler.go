@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	matchLink  = "https://www.hltv.org/events/archive?startDate=2018-01-01&endDate=2019-07-28&offset=%d"
+	eventLink  = "https://www.hltv.org/events/archive?startDate=2018-01-01&offset=%d"
 	teamLink   = "https://www.hltv.org/stats/teams?startDate=2019-03-01&endDate=2019-09-01&rankingFilter=Top50"
 	oddsLink   = "https://www.hltv.org/betting/money"
 	vpLink     = "http://www.vpgame.com/prediction/api/inplay/schedules?category=csgo&type=fixed"

@@ -14,7 +14,7 @@ var test
 const express = require("express");
 var app = express();
 
-initDb(function (err) {
+initD(function (err) {
   app.listen(PORT, function (err) {
     if (err) {
       throw err; //
@@ -24,7 +24,7 @@ initDb(function (err) {
 
   var job = new CronJob('*/5 * * * * *', function() {
     const db = getDb().db();
-    db.collection('match_maps').find({ stats: null }).limit(1).toArray(function(err, result){
+    db.collectio('match_maps').find({ stats: null }).limit(1).toArray(function(err, result){
       if (err) {
         console.error(err)
         return
@@ -54,13 +54,19 @@ app.get("/crawl", (req, res, next) => {
   const db = getDb().db();
   HLTV.getMatchesStats({startDate: req.start+"&rankingFilter=Top30", endDate: req.end}).then((matches) => {
     if (matches.length > 0) {
-      db.collection('match_maps').insertMany(matches, function(err, res) {
-        if (err) {
-          console.error(err)
-          return
-        }
-        console.log("Number of documents inserted: " + res.insertedCount);
-      });
+      matches.forEach(fundtion(item){
+        var exist = false;
+        db.collection('match_maps').findOne({id: item.id}, function(err, result){
+          if (result !== null) exist = true;
+        });
+        if (exist) return;
+        db.collection('match_maps').insert(item, function(err, res) {
+          if (err) {
+            console.error(err)
+            return
+          }
+        });
+      })
     }
     res.json(matches);
   })

@@ -24,7 +24,7 @@ initDb(function (err) {
 
   var job = new CronJob('*/5 * * * * *', function() {
     const db = getDb().db();
-    db.collectio('match_maps').find({ stats: null }).limit(1).toArray(function(err, result){
+    db.collection('match_maps').find({ stats: null }).limit(1).toArray(function(err, result){
       if (err) {
         console.error(err)
         return

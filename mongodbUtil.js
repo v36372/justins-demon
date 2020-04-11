@@ -3,7 +3,9 @@ require('dotenv').config()
 
 const assert = require("assert");
 
-const MONGODB_URI = process.env.MONGODB_URI
+var MONGODB_URI = process.env.MONGODB_URI
+if (process.env.PROD == "true")
+  MONGODB_URI = process.env.PROD_MONGODB_URI
 
 let _db;
 

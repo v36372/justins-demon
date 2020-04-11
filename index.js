@@ -1,11 +1,10 @@
 const { HLTV } = require('hltv')
 var CronJob = require('cron').CronJob;
-var bodyParser = require("body-parser");
+var https = require('https') 
 
 const initDb = require("./mongodbUtil").initDb;
 const getDb = require("./mongodbUtil").getDb;
-
-const myHLTV = HLTV.createInstance({})
+var HttpsProxyAgent = require('https-proxy-agent');
 
 const PORT = process.env.PORT || 5000
 
@@ -13,6 +12,7 @@ var test
 
 const express = require("express");
 var app = express();
+
 
 initDb(function (err) {
   app.listen(PORT, function (err) {
@@ -22,7 +22,51 @@ initDb(function (err) {
     console.log("API Up and running on port " + PORT);
   });
 
-  var job = new CronJob('*/5 * * * * *', function() {
+  var agent;
+  var myHLTV = HLTV.createInstance({})
+  var changeProxy = function() {
+    if (process.env.USE_PROXY == "false")
+      return
+    var options = {
+      host: 'api.getproxylist.com',
+      port: 443,
+      path: '/proxy?country=US',
+      method: 'GET'
+    };
+    var req = https.request(options, function(resp){
+      resp.on('data', function (chunk) {
+        var body = JSON.parse(String(chunk));
+        console.log('using proxy server %s:%d', body['ip'], body['port']);
+        agent = new HttpsProxyAgent(body['ip']+":"+body['port']);
+        myHLTV = HLTV.createInstance({httpAgent: agent})
+      });
+    }).end();
+  }
+  changeProxy();
+
+  app.get("/crawl", (req, res, next) => {
+    // HLTV.getTeamStats({id: 6665}).then(teamStats => {
+    // res.json(teamStats);
+    // })
+    const db = getDb().db();
+    HLTV.getMatchesStats({startDate: req.query.start+"&rankingFilter=Top30", endDate: req.query.end}).then((matches) => {
+      matches.forEach(function(item){
+        db.collection('match_maps').findOne({id: item.id}, function(err, result){
+          if (result !== null) return
+          console.log("insert_new")
+          db.collection('match_maps').insertOne(item, function(err, res) {
+            if (err) {
+              console.error(err)
+              return
+            }
+          });
+        });
+      })
+      res.json(matches);
+    })
+  });
+
+  var job = new CronJob(process.env.CRON_FORMAT, function() {
     const db = getDb().db();
     db.collection('match_maps').find({ stats: null }).limit(1).toArray(function(err, result){
       if (err) {
@@ -32,7 +76,7 @@ initDb(function (err) {
       result.forEach(function(match_map){
         console.log(match_map.id)
         HLTV.getMatchMapStats({id: match_map.id}).then((map_stat) => {
-          if (map_stat === null) return;
+          if (map_stat === null) changeProxy()
           db.collection('match_maps').updateOne({_id: match_map._id}, {$set: {"stats": map_stat}}, function(err, res) {
             if (err) {
               console.error("error when crawl map stats", match_map.id, err)
@@ -40,36 +84,13 @@ initDb(function (err) {
             }
             console.log("Number of documents updated: 1");
           });
+        }).catch((error) => {
+          console.error(error)
+          changeProxy()
         })
       })
     });
   }, null, false);
   job.start()
 });
-
-app.get("/crawl", (req, res, next) => {
-  // HLTV.getTeamStats({id: 6665}).then(teamStats => {
-  // res.json(teamStats);
-  // })
-  const db = getDb().db();
-  HLTV.getMatchesStats({startDate: req.query.start+"&rankingFilter=Top30", endDate: req.query.end}).then((matches) => {
-    if (matches.length > 0) {
-      matches.forEach(function(item){
-        var exist = false;
-        db.collection('match_maps').findOne({id: item.id}, function(err, result){
-          if (result !== null) exist = true;
-        });
-        if (exist) return;
-        db.collection('match_maps').insert(item, function(err, res) {
-          if (err) {
-            console.error(err)
-            return
-          }
-        });
-      })
-    }
-    res.json(matches);
-  })
-});
-
 

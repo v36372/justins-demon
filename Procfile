@@ -1,1 +1,1 @@
-web: ./crawler
+web: node index.js

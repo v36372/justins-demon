@@ -31,8 +31,7 @@ initDb(function (err) {
       if (u == 'false') return
       if (since_last_change < m) {
         since_last_change++
-        console.log("increment tick proxy")
-        console.log(since_last_change, m)
+        console.log("increment tick proxy", since_last_change, m)
         return
       }
       since_last_change = 0
@@ -64,7 +63,7 @@ initDb(function (err) {
       teams.forEach(function(item){
         db.collection('teams').findOne({"team.id": item.team.id}, function(err, result){
           if (result !== null) {
-            console.log("replace team stats")
+            console.log("replace team stats", item.team.name, result._id)
             db.collection('teams').replaceOne({_id: result._id}, item, function(err, res) {
               if (err) {
                 console.error(err)
@@ -73,7 +72,7 @@ initDb(function (err) {
             });
             return
           }
-          console.log("insert new team stats")
+          console.log("insert new team stats", item.team.name)
           db.collection('teams').insertOne(item, function(err, res) {
             if (err) {
               console.error(err)
@@ -94,7 +93,10 @@ initDb(function (err) {
     HLTV.getMatchesStats({startDate: req.query.startDate, endDate: req.query.endDate, rankingFilter: req.query.rankingFilter}).then((matches) => {
       matches.forEach(function(item){
         db.collection('match_maps').findOne({id: item.id}, function(err, result){
-          if (result !== null) return
+          if (result !== null) {
+            console.warn("trying to insert exited match", item.id)
+            return
+          }
           console.log("insert new match")
           db.collection('match_maps').insertOne(item, function(err, res) {
             if (err) {
@@ -127,7 +129,7 @@ initDb(function (err) {
               console.error("error when crawl team stats", team.team.id, err)
               return
             }
-            console.log("Number of documents updated: 1");
+            console.log("Number of teams updated: 1");
           });
         }).catch((error) => {
           console.error(error)
@@ -145,9 +147,7 @@ initDb(function (err) {
         console.error(err)
         return
       }
-      console.log(result)
       result.forEach(function(match_map){
-        console.log(match_map.id)
         HLTV.getMatchMapStats({id: match_map.id}).then((map_stat) => {
           if (map_stat === null) changeProxy()
           db.collection('match_maps').updateOne({_id: match_map._id}, {$set: {"stats": map_stat}}, function(err, res) {
@@ -155,7 +155,7 @@ initDb(function (err) {
               console.error("error when crawl map stats", match_map.id, err)
               return
             }
-            console.log("Number of documents updated: 1");
+            console.log("Number of match updated: 1");
           });
         }).catch((error) => {
           console.error(error)

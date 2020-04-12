@@ -1,6 +1,7 @@
 const { HLTV } = require('./HLTV')
 var CronJob = require('cron').CronJob;
 var https = require('https') 
+require('dotenv').config()
 
 const initDb = require("./mongodbUtil").initDb;
 const getDb = require("./mongodbUtil").getDb;
@@ -25,22 +26,32 @@ initDb(function (err) {
   var agent;
   var myHLTV = HLTV.createInstance({})
   var changeProxy = function() {
-    if (process.env.USE_PROXY == "false")
-      return
-    var options = {
-      host: 'api.getproxylist.com',
-      port: 443,
-      path: '/proxy?country=US',
-      method: 'GET'
-    };
-    var req = https.request(options, function(resp){
-      resp.on('data', function (chunk) {
-        var body = JSON.parse(String(chunk));
-        console.log('using proxy server %s:%d', body['ip'], body['port']);
-        agent = new HttpsProxyAgent(body['ip']+":"+body['port']);
-        myHLTV = HLTV.createInstance({httpAgent: agent})
-      });
-    }).end();
+    var since_last_change = 0
+    return function(u, m){
+      if (u == 'false') return
+      if (since_last_change < m) {
+        since_last_change++
+        console.log("increment tick proxy")
+        console.log(since_last_change, m)
+        return
+      }
+      since_last_change = 0
+
+      var options = {
+        host: 'api.getproxylist.com',
+        port: 443,
+        path: '/proxy?country=US',
+        method: 'GET'
+      };
+      var req = https.request(options, function(resp){
+        resp.on('data', function (chunk) {
+          var body = JSON.parse(String(chunk));
+          console.log('using proxy server %s:%d', body['ip'], body['port']);
+          agent = new HttpsProxyAgent(body['ip']+":"+body['port']);
+          myHLTV = HLTV.createInstance({httpAgent: agent})
+        });
+      }).end();
+    }(process.env.USE_PROXY, Number(process.env.MAX_TICK_BEFORE_CHANGE_PROXY))
   }
   changeProxy();
 
@@ -97,6 +108,36 @@ initDb(function (err) {
     })
   });
 
+  var jobUpdateTeams = new CronJob(process.env.CRON_FORMAT_UPDATE_TEAM, function() {
+    const db = getDb().db();
+    db.collection('teams').find({ stats: null }).limit(1).toArray(function(err, result){
+      if (err) {
+        console.error(err)
+        return
+      }
+      result.forEach(function(team){
+        HLTV.getTeamStats({id: team.team.id}).then((team_stat) => {
+          console.log("update team stats ", team._id)
+          if (team_stat === null) {
+            changeProxy()
+            return
+          }
+          db.collection('teams').updateOne({_id: team._id}, {$set: {"stats": team_stat}}, function(err, res) {
+            if (err) {
+              console.error("error when crawl team stats", team.team.id, err)
+              return
+            }
+            console.log("Number of documents updated: 1");
+          });
+        }).catch((error) => {
+          console.error(error)
+          changeProxy()
+        })
+      })
+    });
+  }, null, false);
+  jobUpdateTeams.start()
+
   var job = new CronJob(process.env.CRON_FORMAT, function() {
     const db = getDb().db();
     db.collection('match_maps').find({ stats: null }).limit(1).toArray(function(err, result){
@@ -104,6 +145,7 @@ initDb(function (err) {
         console.error(err)
         return
       }
+      console.log(result)
       result.forEach(function(match_map){
         console.log(match_map.id)
         HLTV.getMatchMapStats({id: match_map.id}).then((map_stat) => {

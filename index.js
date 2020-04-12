@@ -44,16 +44,47 @@ initDb(function (err) {
   }
   changeProxy();
 
-  app.get("/crawl", (req, res, next) => {
+  app.get("/crawl-teams", (req, res, next) => {
     // HLTV.getTeamStats({id: 6665}).then(teamStats => {
     // res.json(teamStats);
     // })
     const db = getDb().db();
-    HLTV.getTeamExtraStats({startDate: req.query.start, endDate: req.query.end, rankingFilter: req.query.RankingFilter}).then((matches) => {
+    HLTV.getTeamExtraStats({startDate: req.query.startDate, endDate: req.query.endDate, rankingFilter: req.query.rankingFilter}).then((teams) => {
+      teams.forEach(function(item){
+        db.collection('teams').findOne({"team.id": item.team.id}, function(err, result){
+          if (result !== null) {
+            console.log("replace team stats")
+            db.collection('teams').replaceOne({_id: result._id}, item, function(err, res) {
+              if (err) {
+                console.error(err)
+                return
+              }
+            });
+            return
+          }
+          console.log("insert new team stats")
+          db.collection('teams').insertOne(item, function(err, res) {
+            if (err) {
+              console.error(err)
+              return
+            }
+          });
+        });
+      })
+      res.json(teams);
+    })
+  });
+
+  app.get("/crawl-matches", (req, res, next) => {
+    // HLTV.getTeamStats({id: 6665}).then(teamStats => {
+    // res.json(teamStats);
+    // })
+    const db = getDb().db();
+    HLTV.getMatchesStats({startDate: req.query.startDate, endDate: req.query.endDate, rankingFilter: req.query.rankingFilter}).then((matches) => {
       matches.forEach(function(item){
         db.collection('match_maps').findOne({id: item.id}, function(err, result){
           if (result !== null) return
-          console.log("insert_new")
+          console.log("insert new match")
           db.collection('match_maps').insertOne(item, function(err, res) {
             if (err) {
               console.error(err)

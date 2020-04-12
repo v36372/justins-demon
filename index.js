@@ -1,4 +1,4 @@
-const { HLTV } = require('hltv')
+const { HLTV } = require('./HLTV')
 var CronJob = require('cron').CronJob;
 var https = require('https') 
 
@@ -49,7 +49,7 @@ initDb(function (err) {
     // res.json(teamStats);
     // })
     const db = getDb().db();
-    HLTV.getMatchesStats({startDate: req.query.start+"&rankingFilter=Top30", endDate: req.query.end}).then((matches) => {
+    HLTV.getTeamExtraStats({startDate: req.query.start, endDate: req.query.end, rankingFilter: req.query.RankingFilter}).then((matches) => {
       matches.forEach(function(item){
         db.collection('match_maps').findOne({id: item.id}, function(err, result){
           if (result !== null) return

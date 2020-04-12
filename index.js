@@ -1,4 +1,4 @@
-const { HLTV } = require('./HLTV')
+const { HLTV } = require('hltv')
 var CronJob = require('cron').CronJob;
 var https = require('https') 
 

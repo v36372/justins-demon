@@ -1,7 +1,9 @@
 {
   "name": "justins-demon",
   "version": "0.0.1",
-  "scripts":{"preinstall": "cd HLTV && npm install -a && npm run build"},
+  "scripts": {
+    "preinstall": "cd HLTV && npm install -a && npm run build && cd .."
+  },
   "dependencies": {
     "cron": "^1.8.2",
     "dotenv": "^8.2.0",

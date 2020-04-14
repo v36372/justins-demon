@@ -1,8 +1,10 @@
 {
   "name": "justins-demon",
   "version": "0.0.1",
+  "main": "index.js",
   "scripts": {
-    "preinstall": "cd HLTV && npm install -a && npm run build && cd .."
+    "preinstall": "cd HLTV && npm install -a && npm run build && cd ..",
+	"start": "node index.js"
   },
   "dependencies": {
     "cron": "^1.8.2",

@@ -34,7 +34,7 @@ function getDb() {
 function errorHandler(query) {
   return function(err, res){
     if (err != null) {
-      console.err("error when %s: %s", query, err)
+      console.error("error when %s: %s", query, err)
     }
   }
 }

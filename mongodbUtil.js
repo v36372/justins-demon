@@ -31,7 +31,16 @@ function getDb() {
     return _db;
 }
 
+function errorHandler(query) {
+  return function(err, res){
+    if (err != null) {
+      console.err("error when %s: %s", query, err)
+    }
+  }
+}
+
 module.exports = {
     getDb,
-    initDb
+    initDb,
+    errorHandler
 };

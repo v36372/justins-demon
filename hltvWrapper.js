@@ -1,6 +1,7 @@
 const { HLTV } = require('./HLTV');
 require('dotenv').config();
 const assert = require("assert");
+var https = require('https') 
 
 const HttpsProxyAgent = require('https-proxy-agent');
 
@@ -14,10 +15,10 @@ function errorHandler(err) {
     console.error(err)
 }
 
-function changeProxy(url) {
-  console.log("requests to HLTV are blocked because rate limiting: %s", url)
+var changeProxy = function(url, u, m) {
   var since_last_change = 0
-  return function(u, m){
+  return function(url){
+    console.log("requests to HLTV are blocked because rate limiting: %s", url)
     if (u == 'false') return
     if (since_last_change < m) {
       since_last_change++
@@ -29,7 +30,7 @@ function changeProxy(url) {
     var options = {
       host: 'api.getproxylist.com',
       port: 443,
-      path: '/proxy?country=US',
+      path: '/proxy?country=US&allowsHttps=1',
       method: 'GET'
     };
     var req = https.request(options, function(resp){
@@ -37,11 +38,11 @@ function changeProxy(url) {
         var body = JSON.parse(String(chunk));
         console.log('using proxy server %s:%d', body['ip'], body['port']);
         agent = new HttpsProxyAgent(body['ip']+":"+body['port']);
-        _myHLTV.changeAgent(agent);
+        _myHLTV.changeAgent(agent)
       });
     }).end();
-  }(process.env.USE_PROXY, Number(process.env.MAX_TICK_BEFORE_CHANGE_PROXY))
-}
+  }
+}(process.env.USE_PROXY, Number(process.env.MAX_TICK_BEFORE_CHANGE_PROXY))
 
 function createHLTV(){
   console.log("creating hltv")

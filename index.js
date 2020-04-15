@@ -49,6 +49,7 @@ initDb(function (err) {
 
   app.get("/crawl-matches", (req, res, next) => {
     const db = getDb().db();
+
     hltv.getMatchesStats({startDate: req.query.startDate, endDate: req.query.endDate, rankingFilter: req.query.rankingFilter}).then((matches) => {
       matches.forEach(function(item){
         db.collection('match_maps').findOne({id: item.id}, function(err, result){

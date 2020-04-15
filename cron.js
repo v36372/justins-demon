@@ -135,7 +135,7 @@ var runJob = function(){
   ]
 
   return function(){
-    if (jobIndex == 4)
+    if (jobIndex == 3)
       jobIndex = 0;
     else
       jobIndex++;

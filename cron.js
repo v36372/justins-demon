@@ -75,7 +75,7 @@ var _updateSeries = function() {
       console.error(err)
       return
     }
-    db.collection('matches').findOne({id: result.stats.matchPageID}, function(err, match){
+    db.collection('matches').findOne({"match.id": result.stats.matchPageID}, function(err, match){
       if (match == null) {
         hltv.getMatch({id: result.stats.matchPageID}).then((match) => {
           db.collection('matches').insertOne({match: match}, errorHandler("Inserting 1 serie with id = " + match.id))

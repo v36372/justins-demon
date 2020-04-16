@@ -148,10 +148,6 @@ var runJob = function(){
       handler: _updateMatch,
     },
     {
-      name: 'updateTeam',
-      handler: _updateTeam,
-    },
-    {
       name: 'updateSeries',
       handler: _updateSeries,
     },

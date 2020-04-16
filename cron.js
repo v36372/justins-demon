@@ -79,6 +79,7 @@ var _updateSeries = function() {
       if (match == null) {
         hltv.getMatch({id: result.stats.matchPageID}).then((match) => {
           db.collection('matches').insertOne({match: match}, errorHandler("Inserting 1 serie with id = " + match.id))
+          console.log(match)
         }).catch(eHandler)
       }
       db.collection('match_maps').updateOne({_id: result._id}, {$set: {update_series: true}}, errorHandler("Updating 1 map with updated_serie, id = " + result._id))
@@ -160,7 +161,7 @@ var runJob = function(){
     console.log("starting cron job %s", jobList[jobIndex].name)
     jobList[jobIndex].handler()
 
-    if (jobIndex == jobList.length)
+    if (jobIndex == jobList.length-1)
       jobIndex = 0;
     else
       jobIndex++;

@@ -5,6 +5,8 @@ require('dotenv').config();
 const initDb = require("./mongodbUtil").initDb;
 const getDb = require("./mongodbUtil").getDb;
 const startCronScheduler = require("./cron").startCronScheduler;
+const eHandler = require('./hltvWrapper').errorHandler;
+const errorHandler = require('./mongodbUtil').errorHandler;
 
 const PORT = process.env.PORT || 5000
 
@@ -44,7 +46,7 @@ initDb(function (err) {
         });
       })
       res.json(teams);
-    })
+    }).catch(eHandler)
   });
 
   app.get("/crawl-matches", (req, res, next) => {
@@ -63,7 +65,7 @@ initDb(function (err) {
         });
       })
       res.json(matches);
-    })
+    }).catch(eHandler)
   });
 
   startCronScheduler()

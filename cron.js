@@ -50,19 +50,38 @@ var _updateTeam = function() {
   const db = getDb().db();
   const hltv = getHLTV();
 
-  db.collection('teams').find({ stats: null }).limit(1).toArray(function(err, result){
+  db.collection('teams').findOne({ stats: null }, function(err, team){
     if (err) {
       console.error(err)
       return
     }
-    result.forEach(function(team){
-      hltv.getTeamStats({id: team.team.id}).then((team_stat) => {
-        console.log("update team stats ", team._id)
-        if (team_stat === null) {
-          return
-        }
-        db.collection('teams').updateOne({_id: team._id}, {$set: {"stats": team_stat}}, errorHandler("updating team with id = " + team._id));
-      }).catch(eHandler)
+    if (team == null) return;
+    hltv.getTeamStats({id: team.team.id}).then((team_stat) => {
+      console.log("update team stats ", team._id)
+      if (team_stat === null) {
+        return
+      }
+      db.collection('teams').updateOne({_id: team._id}, {$set: {"stats": team_stat}}, errorHandler("updating team with id = " + team._id));
+    }).catch(eHandler)
+  });
+}
+
+var _updateSeries = function() {
+  const db = getDb().db();
+  const hltv = getHLTV();
+
+  db.collection('match_maps').findOne({ update_series: null, stats: {$exists: true} }, function(err, result){
+    if (err) {
+      console.error(err)
+      return
+    }
+    db.collection('matches').findOne({id: result.stats.matchPageID}, function(err, match){
+      if (match == null) {
+        hltv.getMatch({id: result.stats.matchPageID}).then((match) => {
+          db.collection('matches').insertOne({match: match}, errorHandler("Inserting 1 serie with id = " + match.id))
+        }).catch(eHandler)
+      }
+      db.collection('match_maps').updateOne({_id: result._id}, {$set: {update_series: true}}, errorHandler("Updating 1 map with updated_serie, id = " + result._id))
     })
   });
 }
@@ -71,22 +90,21 @@ var _updateMatch = function() {
   const db = getDb().db();
   const hltv = getHLTV();
 
-  db.collection('match_maps').find({ stats: null }).limit(1).toArray(function(err, result){
+  db.collection('match_maps').findOne({ stats: null }, function(err, match_map){
     if (err) {
       console.error(err)
       return
     }
-    result.forEach(function(match_map){
-      hltv.getMatchMapStats({id: match_map.id}).then((map_stat) => {
-        db.collection('match_maps').updateOne({_id: match_map._id}, {$set: {"stats": map_stat}}, function(err, res) {
-          if (err) {
-            console.error("error when crawl map stats", match_map.id, err)
-            return
-          }
-          console.log("Number of match updated: 1");
-        });
-      }).catch(eHandler)
-    })
+    if (match_map == null) return;
+    hltv.getMatchMapStats({id: match_map.id}).then((map_stat) => {
+      db.collection('match_maps').updateOne({_id: match_map._id}, {$set: {"stats": map_stat}}, function(err, res) {
+        if (err) {
+          console.error("error when crawl map stats", match_map.id, err)
+          return
+        }
+        console.log("Number of match updated: 1");
+      });
+    }).catch(eHandler)
   });
 }
 
@@ -132,16 +150,20 @@ var runJob = function(){
       name: 'updateTeam',
       handler: _updateTeam,
     },
+    {
+      name: 'updateSeries',
+      handler: _updateSeries,
+    },
   ]
 
   return function(){
-    if (jobIndex == 3)
+    console.log("starting cron job %s", jobList[jobIndex].name)
+    jobList[jobIndex].handler()
+
+    if (jobIndex == jobList.length)
       jobIndex = 0;
     else
       jobIndex++;
-
-    console.log("starting cron job %s", jobList[jobIndex].name)
-    jobList[jobIndex].handler()
   }
 }()
 

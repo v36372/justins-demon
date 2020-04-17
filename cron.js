@@ -75,6 +75,7 @@ var _updateSeries = function() {
       console.error(err)
       return
     }
+    if (result == null) return;
     db.collection('matches').findOne({"match.id": result.stats.matchPageID}, function(err, match){
       if (match == null) {
         hltv.getMatch({id: result.stats.matchPageID}).then((match) => {
@@ -86,7 +87,7 @@ var _updateSeries = function() {
   });
 }
 
-var _updateMatch = function() {
+var _updateMapStats = function() {
   const db = getDb().db();
   const hltv = getHLTV();
 
@@ -107,6 +108,28 @@ var _updateMatch = function() {
     }).catch(eHandler)
   });
 }
+
+var _updateSeriesStats = function() {
+  const db = getDb().db();
+  const hltv = getHLTV();
+
+  db.collection('matches').findOne({ stats: null }, function(err, match){
+    if (err) {
+      console.error(err)
+      return
+    }
+    if (match == null) return;
+    console.log(match.match.statsId)
+    if (match.match.format != "Best of 1"){
+      hltv.getMatchStats({id: match.match.statsId}).then((match_stat) => {
+        db.collection('matches').updateOne({_id: match._id}, {$set: {"stats": match_stat}}, errorHandler("Update match stat with id = " + match._id));
+      }).catch(eHandler)
+    } else {
+      db.collection('matches').updateOne({_id: match._id}, {$set: {"stats": true}}, errorHandler("Update match stat with id = " + match._id));
+    }
+  });
+}
+
 
 var _crawlNewMaps = function() {
   const db = getDb().db();
@@ -143,12 +166,16 @@ var runJob = function(){
       handler: _crawlNewMaps,
     },
     {
-      name: 'updateMatch',
-      handler: _updateMatch,
+      name: 'updateMapStats',
+      handler: _updateMapStats,
     },
     {
       name: 'updateSeries',
       handler: _updateSeries,
+    },
+    {
+      name: 'updateSeriesStats',
+      handler: _updateSeriesStats,
     },
   ]
 

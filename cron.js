@@ -56,6 +56,7 @@ var _updateSeries = async function() {
   const hltv = getHLTV();
 
   var match_map = await db.collection('match_maps').findOne({ update_series: null, stats: {$exists: true} }).catch(errorHandler("finding 1 maps don't have series"))
+  if (match_map == null) return
   var match = await db.collection('matches').findOne({"match.id": result.stats.matchPageID}).catch(errorHandler("find match with id = " + result.stats.matchPageID))
   if (match == null) {
     var match = await hltv.getMatch({id: result.stats.matchPageID}).catch(eHandler)

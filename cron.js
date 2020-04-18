@@ -111,7 +111,7 @@ var _updateSeriesPlayerStats = async function() {
     
   for await (const playerStat of getPlayerStat()) {
     playersStats.push(playerStat)
-    console.log("got 1")
+    await new Promise(resolve => setTimeout(resolve, 5000));
   }
 
   return db.collection('matches').updateOne({_id: match._id}, {$set: {"players_stats": playersStats}}).catch(errorHandler("updating players stats in match with id = " + match._id));

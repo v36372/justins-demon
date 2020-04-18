@@ -46,6 +46,7 @@ var _updateTeam = async function() {
   const hltv = getHLTV();
 
   var team = await db.collection('teams').findOne({ stats: null }).catch(errorHandler("finding team with stats = null"))
+  if (team == null) return
   var team_stat = await hltv.getTeamStats({id: team.team.id})
   return db.collection('teams').updateOne({_id: team._id}, {$set: {"stats": team_stat}}).catch(errorHandler("updating team with id = " + team._id));
 }
@@ -68,6 +69,7 @@ var _updateMapStats = async function() {
   const hltv = getHLTV();
 
   var match_map = await db.collection('match_maps').findOne({ stats: null }).catch(errorHandler(""))
+  if (match_map == null) return
   var map_stat = await hltv.getMatchMapStats({id: match_map.id}).catch(eHandler)
   return db.collection('match_maps').updateOne({_id: match_map._id}, {$set: {"stats": map_stat}}).catch(errorHandler("updating 1 match_maps, set stats with map_id = " + match_map.id))
 }
@@ -93,6 +95,7 @@ var _updateSeriesPlayerStats = async function() {
   const hltv = getHLTV();
 
   var match = await db.collection('matches').findOne({ players_stats: null }).catch(errorHandler("find matches with player_stats is null"))
+  if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
   var  playersStats = []
@@ -119,6 +122,7 @@ var _updateSeriesTeamExtraStats = async function() {
   const hltv = getHLTV();
 
   var match = await db.collection('matches').findOne({ teams_extraStats: null }).catch(errorHandler("find 1 match with team_extraStats = null"))
+  if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
 
@@ -132,6 +136,7 @@ var _updateSeriesTeamStats = async function() {
   const hltv = getHLTV();
 
   var match = await db.collection('matches').findOne({ teams_stats: null }).catch(errorHandler("finding matches with team_stats = null"))
+  if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
 
@@ -146,6 +151,7 @@ var _updateSeriesStats = async function() {
   const hltv = getHLTV();
 
   var match = await db.collection('matches').findOne({ stats: null }).catch(errorHandler("find 1 match with stats = null"))
+  if (match == null) return
   if (match.match.format != "Best of 1"){
     var match_stat = await hltv.getMatchStats({id: match.match.statsId}).catch(eHandler)
     return db.collection('matches').updateOne({_id: match._id}, {$set: {"stats": match_stat}}).catch(errorHandler("Update match stat with id = " + match._id));

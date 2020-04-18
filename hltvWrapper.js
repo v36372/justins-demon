@@ -9,13 +9,16 @@ var _agent;
 var _myHLTV;
 
 function errorHandler(err) {
+  changeProxy(err[1])
+  /*
   if (err[0] == 429)
     changeProxy(err[1])
   else
     console.error(err)
+  */
 }
 
-var changeProxy = function(url, u, m) {
+var changeProxy = function(u, m) {
   var since_last_change = 0
   return function(url){
     console.log("requests to HLTV are blocked because rate limiting: %s", url)
@@ -30,14 +33,15 @@ var changeProxy = function(url, u, m) {
     var options = {
       host: 'api.getproxylist.com',
       port: 443,
-      path: '/proxy?country=US&allowsHttps=1',
+      path: '/proxy?country=US',
       method: 'GET'
     };
     var req = https.request(options, function(resp){
       resp.on('data', function (chunk) {
         var body = JSON.parse(String(chunk));
         console.log('using proxy server %s:%d', body['ip'], body['port']);
-        agent = new HttpsProxyAgent(body['ip']+":"+body['port']);
+        agent = new HttpsProxyAgent("http://" + body['ip']+":"+body['port']);
+        //agent = new HttpsProxyAgent("http://118.69.50.154:443");
         _myHLTV.changeAgent(agent)
       });
     }).end();

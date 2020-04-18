@@ -8,6 +8,8 @@ const getDb = require("./mongodbUtil").getDb;
 const assert = require("assert");
 var CronJob = require('cron').CronJob;
 
+const TOP_50 = "Top50"
+
 initDb(function (err) {
   if (err != null) {
     console.error(err)
@@ -109,6 +111,60 @@ var _updateMapStats = function() {
   });
 }
 
+function dis(dateObj){
+  return dateObj.toISOString().slice(0,10)
+}
+
+function threeMonthsAgo(unix) {
+  var c = new Date(unix)
+  var o = new Date(c.setMonth(c.getMonth()-3))
+  return dis(o)
+}
+
+function yesterday(unix) {
+  var c = new Date(unix)
+  var o = new Date(c.setDate(c.getDate()-1))
+  return dis(o)
+}
+
+var _updateSeriesPlayerStats = function() {
+}
+
+var _updateSeriesTeamExtraStats = function() {
+  const db = getDb().db();
+  const hltv = getHLTV();
+
+  db.collection('matches').findOne({ teams_extraStats: null }, function(err, match){
+    if (match == null) return;
+    var f = threeMonthsAgo(match.match.date)
+    var t = yesterday(match.match.date)
+
+    hltv.getTeamExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50}).then((teams) => {
+      db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_extraStats.team1": teams[match.match.team1.id]}}, errorHandler("updating team1.ExtraStats in match with id = " + match._id));
+      db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_extraStats.team2": teams[match.match.team2.id]}}, errorHandler("updating team2.ExtraStats in match with id = " + match._id));
+    }).catch(eHandler)
+  });
+}
+
+var _updateSeriesTeamStats = function() {
+  const db = getDb().db();
+  const hltv = getHLTV();
+
+  db.collection('matches').findOne({ teams_stats: null }, function(err, match){
+    if (match == null) return;
+    var f = threeMonthsAgo(match.match.date)
+    var t = yesterday(match.match.date)
+
+    hltv.getTeamStats({id: match.match.team1.id, startDate: f, endDate: t, rankingFilter: TOP_50}).then((team_stat) => {
+      db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_stats.team1": team_stat}}, errorHandler("updating team1.stats in match with id = " + match._id));
+    }).then(() => {
+      hltv.getTeamStats({id: match.match.team2.id, startDate: f, endDate: t, rankingFilter: TOP_50}).then((team_stat) => {
+        db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_stats.team2": team_stat}}, errorHandler("updating team2.stats in match with id = " + match._id));
+      }).catch(eHandler)
+    }).catch(eHandler)
+  });
+}
+
 var _updateSeriesStats = function() {
   const db = getDb().db();
   const hltv = getHLTV();
@@ -135,12 +191,10 @@ var _crawlNewMaps = function() {
   const db = getDb().db();
   const hltv = getHLTV();
 
-  var today = new Date()
-  var yesterday = new Date(new Date().setDate(today.getDate()-1))
-  var t_s = today.toISOString().slice(0,10)
-  var y_s = yesterday.toISOString().slice(0,10)
+  var t = new Date()
+  var f = new Date(new Date().setDate(t.getDate()-1))
 
-  hltv.getMatchesStats({startDate: y_s, endDate: t_s, rankingFilter: "Top50"}).then((matches) => {
+  hltv.getMatchesStats({startDate: dis(f), endDate: dis(t), rankingFilter: TOP_50}).then((matches) => {
     matches.forEach(function(item){
       db.collection('match_maps').findOne({id: item.id}, function(err, result){
         if (result !== null) {
@@ -157,6 +211,7 @@ var _crawlNewMaps = function() {
 var runJob = function(){
   var jobIndex = 0
   const jobList = [
+    /*
     {
       name: 'crawlUpcomingMatches',
       handler: _crawlUpcomingMatches,
@@ -176,6 +231,15 @@ var runJob = function(){
     {
       name: 'updateSeriesStats',
       handler: _updateSeriesStats,
+    },
+    */
+    {
+      name: 'updateSeriesTeamExtraStats',
+      handler: _updateSeriesTeamExtraStats,
+    },
+    {
+      name: 'updateSeriesTeamStats',
+      handler: _updateSeriesTeamStats,
     },
   ]
 

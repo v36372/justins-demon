@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "cd HLTV && npm install -a && npm run build && cd ..",
-	"start": "node index.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "cron": "^1.8.2",

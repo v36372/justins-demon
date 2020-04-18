@@ -9,13 +9,10 @@ var _agent;
 var _myHLTV;
 
 function errorHandler(err) {
-  changeProxy(err[1])
-  /*
   if (err[0] == 429)
     changeProxy(err[1])
   else
     console.error(err)
-  */
 }
 
 var changeProxy = function(u, m) {
@@ -30,19 +27,22 @@ var changeProxy = function(u, m) {
     }
     since_last_change = 0
 
+    if (process.env.PROXY_LAST_RESORT == 1) process.exit(1)
+
     var options = {
       host: 'api.getproxylist.com',
       port: 443,
-      path: '/proxy?country=US',
+      path: '/proxy?country=US&allowsHttps=1',
       method: 'GET'
     };
     var req = https.request(options, function(resp){
       resp.on('data', function (chunk) {
         var body = JSON.parse(String(chunk));
         console.log('using proxy server %s:%d', body['ip'], body['port']);
-        agent = new HttpsProxyAgent("http://" + body['ip']+":"+body['port']);
-        //agent = new HttpsProxyAgent("http://118.69.50.154:443");
-        _myHLTV.changeAgent(agent)
+        _myHLTV.changeProxySettings({
+            host: body['ip'],
+            port: body['port'],
+        })
       });
     }).end();
   }
@@ -60,8 +60,8 @@ function getHLTV(){
 }
 
 module.exports = {
-    createHLTV,
-    getHLTV,
-    changeProxy,
-    errorHandler,
+  createHLTV,
+  getHLTV,
+  changeProxy,
+  errorHandler,
 };

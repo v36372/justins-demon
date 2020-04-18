@@ -211,7 +211,6 @@ var _crawlNewMaps = function() {
 var runJob = function(){
   var jobIndex = 0
   const jobList = [
-    /*
     {
       name: 'crawlUpcomingMatches',
       handler: _crawlUpcomingMatches,
@@ -232,7 +231,6 @@ var runJob = function(){
       name: 'updateSeriesStats',
       handler: _updateSeriesStats,
     },
-    */
     {
       name: 'updateSeriesTeamExtraStats',
       handler: _updateSeriesTeamExtraStats,

@@ -1,6 +1,6 @@
 require('dotenv').config();
 const getHLTV = require('./hltvWrapper').getHLTV;
-const changeProxy = require('./hltvWrapper').changeProxy;
+const changeProxy = require('./hltvWrapper').proxyManager.changeProxy;
 const errorHandler = require('./mongodbUtil').errorHandler;
 const initDb = require("./mongodbUtil").initDb;
 const getDb = require("./mongodbUtil").getDb;
@@ -236,10 +236,10 @@ var jobManager = function(){
         jobIndex++;
     },
     reset: () => busy = false,
-    errorHandler: (jobIndex) => (err) => {
+    errorHandler: (jobIndex) => async (err) => {
       if (err[0] == 429) {
         console.log("requests to HLTV are blocked because rate limiting: %s", err[1])
-        jobList[jobIndex].proxy = changeProxy(jobList[jobIndex].proxy)
+        jobList[jobIndex].proxy = await changeProxy(jobList[jobIndex].proxy)
       }
       else
         console.error(err)

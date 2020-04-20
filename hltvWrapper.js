@@ -2,6 +2,7 @@ const { HLTV } = require('./HLTV');
 require('dotenv').config();
 const assert = require("assert");
 var https = require('https') 
+const fetch = require('node-fetch')
 
 const HttpsProxyAgent = require('https-proxy-agent');
 
@@ -10,18 +11,12 @@ const proxyManager = function(u, m, p){
 
   return {
     _getNewProxy: async function() {
-      var options = {
-        host: 'api.getproxylist.com',
-        port: 443,
-        path: '/proxy?country=US&allowsHttps=1',
-        method: 'GET'
-      };
-      return await fetch('https://api.getproxylist.com//proxy?country=US&allowsHttps=1')
-        .then(response => repsonse.json)
-        .then(body => body[protocol] + "://" +body['ip'] + ":" + body['port'])
+      const response = await fetch('https://api.getproxylist.com/proxy?country=US&allowsHttps=1&protocol=http')
+      const body = await response.json()
+      return body['protocol'] + "://" +body['ip'] + ":" + body['port']
     },
 
-    changeProxy: function(oldProxy) {
+    changeProxy: async function(oldProxy) {
       if (u == 'false') return oldProxy
       if (since_last_change < m) {
         since_last_change++
@@ -32,7 +27,7 @@ const proxyManager = function(u, m, p){
       console.log("try changing old proxy %s", oldProxy)
 
       if (p == 1) process.exit(1)
-      return _getNewProxy()
+      return await proxyManager._getNewProxy()
     }
   }
 }(process.env.USE_PROXY, Number(process.env.MAX_TICK_BEFORE_CHANGE_PROXY), process.env.PROXY_LAST_RESORT)

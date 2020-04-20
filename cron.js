@@ -29,7 +29,6 @@ var _crawlUpcomingMatches = async function(proxy) {
   const hltv = getHLTV(proxy);
 
   var matches = await hltv.getMatches()
-  console.log(matches)
   for (const match of matches) {
       var target = db.collection('upcoming_and_live_match').findOne({"match.id": match.id}).catch(errorHandler("finding 1 upcoming matcch with id = " + match.id))
       if (target == null)
@@ -167,7 +166,6 @@ var _crawlNewMaps = async function(proxy) {
   var f = new Date(new Date().setDate(t.getDate()-1))
 
   var matches = await hltv.getMatchesStats({startDate: dis(f), endDate: dis(t), rankingFilter: TOP_50})
-  console.log(matches)
   for (const match in matches) {
     var match_maps = db.collection('match_maps').findOne({id: match.id}).catch(errorHandler("finding 1 maps with id = " + match.id))
     if (match_maps !== null) continue

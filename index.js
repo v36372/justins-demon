@@ -1,4 +1,3 @@
-const createHLTV = require('./hltvWrapper').createHLTV;
 const getHLTV = require('./hltvWrapper').getHLTV;
 require('dotenv').config();
 
@@ -22,7 +21,6 @@ initDb(function (err) {
       throw err; //
     }
     console.log("API Up and running on port " + PORT);
-    const hltv = createHLTV();
   });
 
   app.get("/crawl-teams", (req, res, next) => {

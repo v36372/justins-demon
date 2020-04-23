@@ -15,6 +15,24 @@ initDb(function (err) {
   }
 });
 
+var mapSlugToName = function(){
+  var slugMap = {
+    'trn' : 'de_train',
+    'cbl' : 'de_cobblestone',
+    'inf': 'de_inferno',
+    'cch': 'de_cache',
+    'mrg': 'de_mirage',
+    'ovp': 'de_overpass',
+    'd2' : 'de_dust2',
+    'nuke' : 'de_nuke',
+    'tcn' : 'de_tuscan',
+    'vertigo' : 'de_vertigo',
+  }
+  return function(slug){
+    return slugMap[slug]
+  }
+}()
+
 var _updateUpcomingMatch = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
@@ -88,6 +106,56 @@ function yesterday(unix) {
   return dis(o)
 }
 
+var _updateSeriesPlayerExtraStatsPerMap = async function(proxy) {
+  const db = getDb().db();
+  const hltv = getHLTV(proxy);
+
+  var match = await db.collection('matches').findOne({ players_extra_stats_per_map: null }).catch(errorHandler("find matches with player_extra_stats_per_map is null"))
+  if (match == null) return
+  var f = threeMonthsAgo(match.match.date)
+  var t = yesterday(match.match.date)
+
+  var playersExtraStatsPerMap = []
+  for (var i=0; i < match.match.maps.length;i++) {
+    if (match.match.maps[i].statsId == null) continue
+    var playersExtraStats= []
+    var playerHashMap = await hltv.getPlayerExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50, minMapCount: "1", maps:mapSlugToName(match.match.maps[i].name)})
+
+    for(var j = 0;j< 10;j++) {
+      if (j < 5) {
+        playersExtraStats.push(playerHashMap[match.match.players.team1[j].id])
+      } else {
+        playersExtraStats.push(playerHashMap[match.match.players.team2[j-5].id])
+      }
+    }
+
+    playersExtraStatsPerMap.push(playersExtraStats)
+  }
+  db.collection('matches').updateOne({_id: match._id}, {$set: {"players_extra_stats_per_map": playersExtraStatsPerMap}}).catch(errorHandler("updating players extra stats in match with id = " + match._id));
+}
+
+var _updateSeriesPlayerExtraStats = async function(proxy) {
+  const db = getDb().db();
+  const hltv = getHLTV(proxy);
+
+  var match = await db.collection('matches').findOne({ players_extra_stats: null }).catch(errorHandler("find matches with player_extra_stats is null"))
+  if (match == null) return
+  var f = threeMonthsAgo(match.match.date)
+  var t = yesterday(match.match.date)
+  var  playersExtraStats = []
+  var playerHashMap = await hltv.getPlayerExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50, minMapCount: "1"})
+
+  for(var i = 0;i< 10;i++) {
+    if (i < 5) {
+      playersExtraStats.push(playerHashMap[match.match.players.team1[i].id])
+    } else {
+      playersExtraStats.push(playerHashMap[match.match.players.team2[i-5].id])
+    }
+  }
+  return db.collection('matches').updateOne({_id: match._id}, {$set: {"players_extra_stats": playersExtraStats}}).catch(errorHandler("updating players extra stats in match with id = " + match._id));
+}
+
+
 var _updateSeriesPlayerStats = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
@@ -97,22 +165,39 @@ var _updateSeriesPlayerStats = async function(proxy) {
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
   var  playersStats = []
-  var getPlayerStat = function* () {
-    for(var i = 0;i< 10;i++) {
-      if (i < 5) {
-        yield hltv.getPlayerStats({id: match.match.players.team1[i].id, startDate: f, endDate: t, rankingFilter: TOP_50})
-      } else {
-        yield hltv.getPlayerStats({id: match.match.players.team2[i-5].id, startDate: f, endDate: t, rankingFilter: TOP_50})
-      }
-    }
-  }
     
-  for await (const playerStat of getPlayerStat()) {
-    playersStats.push(playerStat)
-    await new Promise(resolve => setTimeout(resolve, 5000));
+  for(var i = 0;i< 10;i++) {
+    var ps = undefined
+    if (i < 5) {
+      ps = await hltv.getPlayerStats({id: match.match.players.team1[i].id, startDate: f, endDate: t, rankingFilter: TOP_50})
+    } else {
+      ps = await hltv.getPlayerStats({id: match.match.players.team2[i-5].id, startDate: f, endDate: t, rankingFilter: TOP_50})
+    }
+    playersStats.push(ps)
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   return db.collection('matches').updateOne({_id: match._id}, {$set: {"players_stats": playersStats}}).catch(errorHandler("updating players stats in match with id = " + match._id));
+}
+
+var _updateSeriesTeamExtraStatsPerMap = async function(proxy) {
+  const db = getDb().db();
+  const hltv = getHLTV(proxy);
+
+  var match = await db.collection('matches').findOne({ teams_extraStatsPerMap: null }).catch(errorHandler("find 1 match with team_extraStatsPerMap = null"))
+  if (match == null) return
+  var f = threeMonthsAgo(match.match.date)
+  var t = yesterday(match.match.date)
+
+  var team1ExtraStatsPerMap = []
+  var team2ExtraStatsPerMap = []
+  for (var i=0; i < match.match.maps.length;i++) {
+    var teams = await hltv.getTeamExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50, minMapCount: "1", maps: mapSlugToName(match.match.maps[i].name)})
+    team1ExtraStatsPerMap.push(teams[match.match.team1.id])
+    team2ExtraStatsPerMap.push(teams[match.match.team2.id])
+  }
+  db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_extraStatsPerMap.team1": team1ExtraStatsPerMap}}).catch(errorHandler("updating team1.ExtraStats in match with id = " + match._id));
+  db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_extraStatsPerMap.team2": team2ExtraStatsPerMap}}).catch(errorHandler("updating team1.ExtraStats in match with id = " + match._id));
 }
 
 var _updateSeriesTeamExtraStats = async function(proxy) {
@@ -124,7 +209,7 @@ var _updateSeriesTeamExtraStats = async function(proxy) {
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
 
-  var teams = await hltv.getTeamExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50})
+  var teams = await hltv.getTeamExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50, minMapCount: "1"})
   db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_extraStats.team1": teams[match.match.team1.id]}}).catch(errorHandler("updating team1.ExtraStats in match with id = " + match._id));
   db.collection('matches').updateOne({_id: match._id}, {$set: {"teams_extraStats.team2": teams[match.match.team2.id]}}).catch(errorHandler("updating team2.ExtraStats in match with id = " + match._id));
 }
@@ -162,8 +247,11 @@ var _crawlNewMaps = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var t = new Date()
-  var f = new Date(new Date().setDate(t.getDate()-1))
+  var today = new Date()
+  var t = new Date(new Date().setDate(today.getDate()-1))
+  var f = new Date(new Date().setDate(today.getDate()-2))
+  console.log(dis(f))
+  console.log(dis(t))
 
   var matches = await hltv.getMatchesStats({startDate: dis(f), endDate: dis(t), rankingFilter: TOP_50})
   for (const match in matches) {
@@ -206,18 +294,33 @@ var jobManager = function(){
       proxy: "",
     },
     {
-      name: 'updateSeriesTeamExtraStats',
-      handler: _updateSeriesTeamExtraStats,
-      proxy: "",
-    },
-    {
       name: 'updateSeriesTeamStats',
       handler: _updateSeriesTeamStats,
       proxy: "",
     },
     {
+      name: 'updateSeriesTeamExtraStats',
+      handler: _updateSeriesTeamExtraStats,
+      proxy: "",
+    },
+    {
+      name: 'updateSeriesTeamExtraStatsPerMap',
+      handler: _updateSeriesTeamExtraStatsPerMap,
+      proxy: "",
+    },
+    {
       name: 'updateSeriesPlayerStats',
       handler: _updateSeriesPlayerStats,
+      proxy: "",
+    },
+    {
+      name: 'updateSeriesPlayerExtraStats',
+      handler: _updateSeriesPlayerExtraStats,
+      proxy: "",
+    },
+    {
+      name: 'updateSeriesPlayerExtraStatsPerMap',
+      handler: _updateSeriesPlayerExtraStatsPerMap,
       proxy: "",
     },
   ]

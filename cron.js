@@ -72,12 +72,12 @@ var _updateSeries = async function(proxy) {
 
   var match_map = await db.collection('match_maps').findOne({ update_series: null, stats: {$exists: true} }).catch(errorHandler("finding 1 maps don't have series"))
   if (match_map == null) return
-  var match = await db.collection('matches').findOne({"match.id": result.stats.matchPageID}).catch(errorHandler("find match with id = " + result.stats.matchPageID))
+  var match = await db.collection('matches').findOne({"match.id": match_map.stats.matchPageID}).catch(errorHandler("find match with id = " + match_map.stats.matchPageID))
   if (match == null) {
-    var match = await hltv.getMatch({id: result.stats.matchPageID})
+    var match = await hltv.getMatch({id: match_map.stats.matchPageID})
     await db.collection('matches').insertOne({match: match}).catch(errorHandler("Inserting 1 serie with id = " + match.id))
   }
-  return db.collection('match_maps').updateOne({_id: result._id}, {$set: {update_series: true}}).catch(errorHandler("Updating 1 map with updated_serie, id = " + result._id))
+  return db.collection('match_maps').updateOne({_id: match_map._id}, {$set: {update_series: true}}).catch(errorHandler("Updating 1 map with updated_serie, id = " + match_map._id))
 }
 
 var _updateMapStats = async function(proxy) {

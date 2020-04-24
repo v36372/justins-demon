@@ -16,9 +16,9 @@ const proxyManager = function(u, m, p){
       return body['protocol'] + "://" +body['ip'] + ":" + body['port']
     },
 
-    changeProxy: async function(oldProxy) {
+    changeProxy: async function(oldProxy, i) {
       if (u == 'false') return oldProxy
-      if (since_last_change < m) {
+      if (!i && since_last_change < m) {
         since_last_change++
         console.log("increment tick proxy", since_last_change, m)
         return oldProxy

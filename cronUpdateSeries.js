@@ -205,7 +205,7 @@ var jobManager = function(u, n){
     setUpProxies: async function(i) {
       if (!u) return
       busy = true
-      var newProxy = await changeProxy("")
+      var newProxy = await changeProxy("", true)
       for (job of jobList) {
         job.proxy = newProxy
       }

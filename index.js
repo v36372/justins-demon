@@ -3,7 +3,8 @@ require('dotenv').config();
 
 const initDb = require("./mongodbUtil").initDb;
 const getDb = require("./mongodbUtil").getDb;
-const startCronScheduler = require("./cron").startCronScheduler;
+const startCronNewMaps = require("./cronNewMapsAndSeries").startCronScheduler;
+const startCronUpdateSeries = require("./cronUpdateSeries").startCronScheduler;
 const eHandler = require('./hltvWrapper').errorHandler;
 const errorHandler = require('./mongodbUtil').errorHandler;
 
@@ -42,6 +43,7 @@ initDb(function (err) {
     }).catch(eHandler)
   });
 
-  startCronScheduler()
+  startCronUpdateSeries()
+  startCronNewMaps()
 });
 

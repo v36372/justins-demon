@@ -23,7 +23,7 @@ var _updateSeriesPlayerExtraStatsPerMap = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var match = await db.collection('matches').findOne({ players_extra_stats_per_map: null }).catch(errorHandler("find matches with player_extra_stats_per_map is null"))
+  var match = await db.collection('matches').findOne({ players_extra_stats_per_map: {$exists: false} }).catch(errorHandler("find matches with player_extra_stats_per_map is null"))
   if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
@@ -51,7 +51,7 @@ var _updateSeriesPlayerExtraStats = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var match = await db.collection('matches').findOne({ players_extra_stats: null }).catch(errorHandler("find matches with player_extra_stats is null"))
+  var match = await db.collection('matches').findOne({ "players_extra_stats": {$exists: false} }).catch(errorHandler("find matches with player_extra_stats is null"))
   if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
@@ -75,7 +75,7 @@ var _updateSeriesPlayerStats = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var match = await db.collection('matches').findOne({ players_stats: null }).catch(errorHandler("find matches with player_stats is null"))
+  var match = await db.collection('matches').findOne({ players_stats: {$exists: false}}).catch(errorHandler("find matches with player_stats is null"))
   if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
@@ -99,7 +99,7 @@ var _updateSeriesTeamExtraStatsPerMap = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var match = await db.collection('matches').findOne({ teams_extraStatsPerMap: null }).catch(errorHandler("find 1 match with team_extraStatsPerMap = null"))
+  var match = await db.collection('matches').findOne({ teams_extraStatsPerMap: {$exists: false} }).catch(errorHandler("find 1 match with team_extraStatsPerMap = null"))
   if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
@@ -119,7 +119,7 @@ var _updateSeriesTeamExtraStats = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var match = await db.collection('matches').findOne({ teams_extraStats: null }).catch(errorHandler("find 1 match with team_extraStats = null"))
+  var match = await db.collection('matches').findOne({ teams_extraStats: {$exists: false} }).catch(errorHandler("find 1 match with team_extraStats = null"))
   if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
@@ -133,7 +133,7 @@ var _updateSeriesTeamStats = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var match = await db.collection('matches').findOne({ teams_stats: null }).catch(errorHandler("finding matches with team_stats = null"))
+  var match = await db.collection('matches').findOne({ teams_stats: {$exists: false} }).catch(errorHandler("finding matches with team_stats = null"))
   if (match == null) return
   var f = threeMonthsAgo(match.match.date)
   var t = yesterday(match.match.date)
@@ -148,7 +148,7 @@ var _updateSeriesStats = async function(proxy) {
   const db = getDb().db();
   const hltv = getHLTV(proxy);
 
-  var match = await db.collection('matches').findOne({ stats: null }).catch(errorHandler("find 1 match with stats = null"))
+  var match = await db.collection('matches').findOne({ stats: {$exists: false} }).catch(errorHandler("find 1 match with stats = null"))
   if (match == null) return
   if (match.match.format.split(" ")[2] != "1"){
     var match_stat = await hltv.getMatchStats({id: match.match.statsId})

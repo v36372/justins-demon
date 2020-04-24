@@ -145,6 +145,7 @@ var _updateSeriesPlayerExtraStats = async function(proxy) {
   var  playersExtraStats = []
   var playerHashMap = await hltv.getPlayerExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50, minMapCount: "1"})
 
+  console.log(match.match.id)
   for(var i = 0;i< 10;i++) {
     if (i < 5) {
       playersExtraStats.push(playerHashMap[match.match.players.team1[i].id])
@@ -152,6 +153,7 @@ var _updateSeriesPlayerExtraStats = async function(proxy) {
       playersExtraStats.push(playerHashMap[match.match.players.team2[i-5].id])
     }
   }
+  console.log(playersExtraStats.length)
   return db.collection('matches').updateOne({_id: match._id}, {$set: {"players_extra_stats": playersExtraStats}}).catch(errorHandler("updating players extra stats in match with id = " + match._id));
 }
 
@@ -235,7 +237,7 @@ var _updateSeriesStats = async function(proxy) {
 
   var match = await db.collection('matches').findOne({ stats: null }).catch(errorHandler("find 1 match with stats = null"))
   if (match == null) return
-  if (match.match.format.split(" ")[2] != ""){
+  if (match.match.format.split(" ")[2] != "1"){
     var match_stat = await hltv.getMatchStats({id: match.match.statsId})
     return db.collection('matches').updateOne({_id: match._id}, {$set: {"stats": match_stat}}).catch(errorHandler("Update match stat with id = " + match._id));
   } else {
@@ -250,8 +252,6 @@ var _crawlNewMaps = async function(proxy) {
   var today = new Date()
   var t = new Date(new Date().setDate(today.getDate()-1))
   var f = new Date(new Date().setDate(today.getDate()-2))
-  console.log(dis(f))
-  console.log(dis(t))
 
   var matches = await hltv.getMatchesStats({startDate: dis(f), endDate: dis(t), rankingFilter: TOP_50})
   for (const match in matches) {
@@ -272,7 +272,6 @@ var jobManager = function(){
       handler: _crawlUpcomingMatches,
       proxy: "",
     },
-    */
     {
       name: 'crawlNewMaps', 
       handler: _crawlNewMaps,
@@ -313,6 +312,7 @@ var jobManager = function(){
       handler: _updateSeriesPlayerStats,
       proxy: "",
     },
+    */
     {
       name: 'updateSeriesPlayerExtraStats',
       handler: _updateSeriesPlayerExtraStats,

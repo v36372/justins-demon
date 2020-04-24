@@ -26,7 +26,7 @@ const proxyManager = function(u, m, p){
       since_last_change = 0
       console.log("try changing old proxy %s", oldProxy)
 
-      if (p == 1) process.exit(1)
+      if (!i && p == 1) process.exit(1)
       return await proxyManager._getNewProxy()
     }
   }

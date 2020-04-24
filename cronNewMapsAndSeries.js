@@ -144,12 +144,11 @@ var jobManager = function(u, n){
         jobIndex++;
     },
     errorHandler: (jobIndex) => async (err) => {
-      if (err[0] == 429) {
+      console.error(err)
+      if (err[0] == 429)
         console.log("requests to HLTV are blocked because rate limiting: %s", err[1])
+      if (err[0] >= 400 && err[0] < 500)
         jobList[jobIndex].proxy = await changeProxy(jobList[jobIndex].proxy)
-      }
-      else
-        console.error(err)
     },
   }
 }(process.env.USE_PROXY, "NewMapsAndSeries")

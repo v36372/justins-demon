@@ -107,6 +107,7 @@ var _updateSeriesTeamExtraStatsPerMap = async function(proxy) {
   var team1ExtraStatsPerMap = []
   var team2ExtraStatsPerMap = []
   for (var i=0; i < match.match.maps.length;i++) {
+    if (match.match.maps[i].statsId == null) continue
     var teams = await hltv.getTeamExtraStats({startDate: f, endDate: t, rankingFilter: TOP_50, minMapCount: "1", maps: mapSlugToName(match.match.maps[i].name)})
     team1ExtraStatsPerMap.push(teams[match.match.team1.id])
     team2ExtraStatsPerMap.push(teams[match.match.team2.id])

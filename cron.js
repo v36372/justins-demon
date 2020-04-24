@@ -272,6 +272,7 @@ var jobManager = function(){
       handler: _crawlUpcomingMatches,
       proxy: "",
     },
+    */
     {
       name: 'crawlNewMaps', 
       handler: _crawlNewMaps,
@@ -312,7 +313,6 @@ var jobManager = function(){
       handler: _updateSeriesPlayerStats,
       proxy: "",
     },
-    */
     {
       name: 'updateSeriesPlayerExtraStats',
       handler: _updateSeriesPlayerExtraStats,

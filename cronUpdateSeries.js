@@ -224,12 +224,16 @@ var jobManager = function(u, n){
         jobIndex++;
     },
     errorHandler: (jobIndex) => async (err) => {
-      if (err[0] == 429) {
+      console.error(err)
+      var shouldChange = false
+      if (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET')
+        shouldChange = true
+      if (err[0] >= 400 && err[0] < 500)
+        shouldChange = true
+      if (err[0] == 429)
         console.log("requests to HLTV are blocked because rate limiting: %s", err[1])
+      if (shouldChange)
         jobList[jobIndex].proxy = await changeProxy(jobList[jobIndex].proxy)
-      }
-      else
-        console.error(err)
     },
   }
 }(process.env.USE_PROXY, "SeriesUpdater")

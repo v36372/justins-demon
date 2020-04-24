@@ -232,7 +232,7 @@ var jobManager = function(u, n){
         console.error(err)
     },
   }
-}(false, "SeriesUpdater")
+}(process.env.USE_PROXY, "SeriesUpdater")
 
 function startCronScheduler(){
   var job = new CronJob(process.env.CRON_SERIES_UPDATE_FORMAT, jobManager.execute, null, false);

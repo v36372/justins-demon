@@ -11,6 +11,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "hltv": "file:HLTV",
+    "honeybadger": "^1.4.0",
     "https-proxy-agent": "^5.0.0",
     "mongodb": "^3.5.5",
     "node-fetch": "^2.6.0"

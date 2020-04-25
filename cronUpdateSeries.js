@@ -10,6 +10,9 @@ const dis = require("./utils").dis
 const threeMonthsAgo = require("./utils").threeMonthsAgo
 const yesterday = require("./utils").yesterday
 var CronJob = require('cron').CronJob;
+var Honeybadger = require('honeybadger').configure({
+    apiKey: process.env.HB_API_KEY
+});
 
 const TOP_50 = "Top50"
 
@@ -226,6 +229,7 @@ var jobManager = function(u, n){
     },
     errorHandler: (jobIndex) => async (err) => {
       console.error(err)
+      Honeybadger.notify(err);
       var shouldChange = false
       if (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET')
         shouldChange = true

@@ -1,5 +1,8 @@
 const MongoClient = require( 'mongodb' ).MongoClient;
 require('dotenv').config()
+var Honeybadger = require('honeybadger').configure({
+    apiKey: process.env.HB_API_KEY
+});
 
 const assert = require("assert");
 
@@ -35,6 +38,7 @@ function errorHandler(query) {
   return function(err, res){
     if (err != null) {
       console.error("error when %s: %s", query, err)
+      Honeybadger.notify(err);
     }
   }
 }

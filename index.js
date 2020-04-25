@@ -24,6 +24,32 @@ initDb(function (err) {
     console.log("API Up and running on port " + PORT);
   });
 
+  app.get("/", async (req, res, next) => {
+    const db = getDb().db();
+    const hltv = getHLTV("");
+
+    var totalMatches = await db.collection('matches').count()
+    var stats = await db.collection('matches').find({stats: {$exists: true}}).count()
+    var teamStats = await db.collection('matches').find({teams_stats: {$exists: true}}).count()
+    var teamExtraStats = await db.collection('matches').find({teams_extraStats: {$exists: true}}).count()
+    var teamExtraStatsPerMap = await db.collection('matches').find({teams_extraStatsPerMap: {$exists: true}}).count()
+    var playerStats = await db.collection('matches').find({players_stats: {$exists: true}}).count()
+    var playerExtraStats= await db.collection('matches').find({players_extra_stats: {$exists: true}}).count()
+    var playerExtraStatsPerMap = await db.collection('matches').find({players_extra_stats_per_map: {$exists: true}}).count()
+
+
+    res.json({
+      total: totalMatches,
+      stats: stats/totalMatches,
+      teamStats: teamStats/totalMatches,
+      teamExtraStats: teamExtraStats/totalMatches,
+      teamExtraStatsPerMap: teamExtraStatsPerMap/totalMatches,
+      playerStats: playerStats/totalMatches,
+      playerExtraStats: playerExtraStats/totalMatches,
+      playerExtraStatsPerMap: playerExtraStatsPerMap/totalMatches,
+    })
+  });
+
   app.get("/crawl-matches", (req, res, next) => {
     const db = getDb().db();
     const hltv = getHLTV("");

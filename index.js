@@ -37,6 +37,8 @@ initDb(function (err) {
     var playerStats = await db.collection('matches').find({players_stats: {$exists: true}}).count()
     var playerExtraStats= await db.collection('matches').find({players_extra_stats: {$exists: true}}).count()
     var playerExtraStatsPerMap = await db.collection('matches').find({players_extra_stats_per_map: {$exists: true}}).count()
+    var dataPoints_1 = await db.collection('data_m1').find().count()
+    var dataPoints_2 = await db.collection('data_m2').find().count()
 
 
     res.json({
@@ -48,6 +50,8 @@ initDb(function (err) {
       playerStats: playerStats/totalMatches,
       playerExtraStats: playerExtraStats/totalMatches,
       playerExtraStatsPerMap: playerExtraStatsPerMap/totalMatches,
+      dataSizeMap1: dataPoints_1,
+      dataSizeMap2: dataPoints_2,
     })
   });
 

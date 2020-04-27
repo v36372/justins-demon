@@ -12,12 +12,12 @@ if (process.env.PROD == "true")
 
 let _db;
 
-function initDb(callback) {
+async function initDb(callback) {
   if (_db) {
     console.warn("Trying to init DB again!");
     return callback(null, _db);
   }
-  MongoClient.connect(MONGODB_URI, connected);
+  return await MongoClient.connect(MONGODB_URI, connected);
 
   function connected(err, db) {
     if (err) {

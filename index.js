@@ -5,6 +5,7 @@ const initDb = require("./mongodbUtil").initDb;
 const getDb = require("./mongodbUtil").getDb;
 const startCronNewMaps = require("./cronNewMapsAndSeries").startCronScheduler;
 const startCronUpdateSeries = require("./cronUpdateSeries").startCronScheduler;
+const startCronCreateData = require("./cronDataMassage").startCronScheduler;
 const eHandler = require('./hltvWrapper').errorHandler;
 const errorHandler = require('./mongodbUtil').errorHandler;
 
@@ -71,5 +72,6 @@ initDb(function (err) {
 
   startCronUpdateSeries()
   startCronNewMaps()
+  startCronCreateData()
 });
 

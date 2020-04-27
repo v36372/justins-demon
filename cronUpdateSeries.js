@@ -162,6 +162,19 @@ var _updateSeriesStats = async function(proxy) {
   }
 }
 
+var _updateHead2Head = async function(proxy) {
+  const db = getDb().db();
+  const hltv = getHLTV(proxy);
+
+  var match = await db.collection('matches').findOne({ update_h2h: {$exists: false} }).catch(errorHandler("find 1 match with h2h = null"))
+  if (match == null) return
+  var f = threeMonthsAgo(match.match.date)
+  var t = yesterday(match.match.date)
+
+  var matches = await hltv.getMatchesStats({startDate: f, endDate: t, })
+}
+
+
 var jobManager = function(u, n){
   var jobIndex = 0
   var workerName = n

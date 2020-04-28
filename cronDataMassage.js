@@ -205,7 +205,7 @@ var _createDataPoint = async function() {
     }
 
   db.collection("data_m1").insertOne({features: first_map_data_point, label: labels_m1}).catch(errorHandler("inserting 1 datapoint map 1"))
-  if (match.match.format.split(" ")[2] !== '1')
+  if (isBo1)
     db.collection("data_m2").insertOne({features: second_map_data_point, label: labels_m2}).catch(errorHandler("inserting 1 datapoint map 2"))
   db.collection("matches").updateOne({_id: match._id}, {$set: {"datated": true}}).catch(errorHandler("update 1 match datated to true"))
 }

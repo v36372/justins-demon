@@ -39,20 +39,21 @@ var _createDataPoint = async function() {
 
   var match = await db.collection("matches").findOne({$and: [{stats:{$exists:true}},{players_stats:{$exists:true}},{players_extra_stats:{$exists:true}},{players_extra_stats_per_map:{$exists:true}},{teams_stats:{$exists:true}},{teams_extraStats:{$exists:true}},{teams_extraStatsPerMap:{$exists:true}}, {datated: null}]}).catch(errorHandler("finding 1 match with dateted = null"))
   console.log(match.match.id)
-  var m1_result =  match.match.maps[0].result.split("(")[0].split(":")
-  var m2_result;
-  if (match.match.format.split(" ")[2] !== '1')
-    m2_result =  match.match.maps[1].result.split("(")[0].split(":")
 
   var startIndex = 0
-  var isBo1 = false
+  var isNotBo1 = false
   while (match.match.maps[startIndex].statsId == null) {
     startIndex++
   }
 
   if (startIndex+1 > match.match.maps.length || match.match.maps[startIndex+1].statsId == null || match.match.format.split(" ")[2] == '1')
-    isBo1 = true
+    isNotBo1 = true
   var map1_stats = await db.collection("match_maps").findOne({"id": match.match.maps[startIndex].statsId}).catch(errorHandler("finding 1 map with id = " + match.match.maps[startIndex].statsId))
+
+  var m1_result =  match.match.maps[startIndex].result.split("(")[0].split(":")
+  var m2_result;
+  if (isNotBo1)
+    m2_result =  match.match.maps[startIndex+1].result.split("(")[0].split(":")
 
   var createPastSeries = async (matchIds) => {
     var pastSeries = []
@@ -144,7 +145,7 @@ var _createDataPoint = async function() {
   }
 
   var labels_m2 = {}
-  if (isBo1)
+  if (isNotBo1)
     labels_m2 = {
       a_winner: Number(m2_result[0])>Number(m2_result[1]),
       a_series_winner: match.match.winnerTeam.id == match.match.team1.id,
@@ -159,7 +160,7 @@ var _createDataPoint = async function() {
   var h2h = await findH2H(match.match.team1.id, match.match.team2.id, match._id)
   var h2h_m1 = await findH2HPerMap(match.match.team1.id, match.match.team2.id, match.match.maps[startIndex].name, match.id)
   var h2h_m2;
-  if (isBo1)
+  if (isNotBo1)
     h2h_m2 = await findH2HPerMap(match.match.team1.id, match.match.team2.id, match.match.maps[startIndex+1].name, match.id)
   var a_pastSeries = await createPastSeries(match.match.pastSeries.team1)
   var b_pastSeries = await createPastSeries(match.match.pastSeries.team2)
@@ -184,7 +185,7 @@ var _createDataPoint = async function() {
   }
 
   var second_map_data_point = {}
-  if (isBo1)
+  if (isNotBo1)
     second_map_data_point = {
       stats_m1: map1_stats,
       rank_a: match.match.team1.rank,
@@ -205,7 +206,7 @@ var _createDataPoint = async function() {
     }
 
   db.collection("data_m1").insertOne({features: first_map_data_point, label: labels_m1}).catch(errorHandler("inserting 1 datapoint map 1"))
-  if (isBo1)
+  if (isNotBo1)
     db.collection("data_m2").insertOne({features: second_map_data_point, label: labels_m2}).catch(errorHandler("inserting 1 datapoint map 2"))
   db.collection("matches").updateOne({_id: match._id}, {$set: {"datated": true}}).catch(errorHandler("update 1 match datated to true"))
 }

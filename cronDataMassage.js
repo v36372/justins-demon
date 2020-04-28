@@ -46,7 +46,7 @@ var _createDataPoint = async function() {
     startIndex++
   }
 
-  if (startIndex+1 > match.match.maps.length || match.match.maps[startIndex+1].statsId == null || match.match.format.split(" ")[2] == '1')
+  if (startIndex+1 < match.match.maps.length && match.match.maps[startIndex+1].statsId !== null && match.match.format.split(" ")[2] !== '1')
     isNotBo1 = true
   var map1_stats = await db.collection("match_maps").findOne({"id": match.match.maps[startIndex].statsId}).catch(errorHandler("finding 1 map with id = " + match.match.maps[startIndex].statsId))
 

@@ -44,10 +44,15 @@ var _createDataPoint = async function() {
   if (match.match.format.split(" ")[2] !== '1')
     m2_result =  match.match.maps[1].result.split("(")[0].split(":")
 
-  var m2_stats
-  var map1_stats = await db.collection("match_maps").findOne({"id": match.match.maps[0].statsId}).catch(errorHandler("finding 1 map with id = " + match.match.maps[0].statsId))
-  if (match.match.format.split(" ")[2] !== '1')
-    map2_stats = await db.collection("match_maps").findOne({"id": match.match.maps[1].statsId}).catch(errorHandler("finding 1 map with id = " + match.match.maps[1].statsId))
+  var startIndex = 0
+  var isBo1 = false
+  while (match.match.maps[startIndex].statsId == null) {
+    startIndex++
+  }
+
+  if (startIndex+1 > match.match.maps.length || match.match.maps[startIndex+1].statsId == null || match.match.format.split(" ")[2] == '1')
+    isBo1 = true
+  var map1_stats = await db.collection("match_maps").findOne({"id": match.match.maps[startIndex].statsId}).catch(errorHandler("finding 1 map with id = " + match.match.maps[startIndex].statsId))
 
   var createPastSeries = async (matchIds) => {
     var pastSeries = []
@@ -139,7 +144,7 @@ var _createDataPoint = async function() {
   }
 
   var labels_m2 = {}
-  if (match.match.format.split(" ")[2] !== '1')
+  if (isBo1)
     labels_m2 = {
       a_winner: Number(m2_result[0])>Number(m2_result[1]),
       a_series_winner: match.match.winnerTeam.id == match.match.team1.id,
@@ -152,10 +157,10 @@ var _createDataPoint = async function() {
     }
 
   var h2h = await findH2H(match.match.team1.id, match.match.team2.id, match._id)
-  var h2h_m1 = await findH2HPerMap(match.match.team1.id, match.match.team2.id, match.match.maps[0].name, match.id)
+  var h2h_m1 = await findH2HPerMap(match.match.team1.id, match.match.team2.id, match.match.maps[startIndex].name, match.id)
   var h2h_m2;
-  if (match.match.format.split(" ")[2] !== '1')
-    h2h_m2 = await findH2HPerMap(match.match.team1.id, match.match.team2.id, match.match.maps[1].name, match.id)
+  if (isBo1)
+    h2h_m2 = await findH2HPerMap(match.match.team1.id, match.match.team2.id, match.match.maps[startIndex+1].name, match.id)
   var a_pastSeries = await createPastSeries(match.match.pastSeries.team1)
   var b_pastSeries = await createPastSeries(match.match.pastSeries.team2)
 
@@ -163,7 +168,7 @@ var _createDataPoint = async function() {
   var first_map_data_point = {
     rank_a: match.match.team1.rank,
     rank_b: match.match.team2.rank,
-    map: match.match.maps[0].name,
+    map: match.match.maps[startIndex].name,
     format: match.match.format,
     additional_info: match.match.additionalInfo,
     a_past_series: a_pastSeries,
@@ -179,12 +184,12 @@ var _createDataPoint = async function() {
   }
 
   var second_map_data_point = {}
-  if (match.match.format.split(" ")[2] !== '1')
+  if (isBo1)
     second_map_data_point = {
       stats_m1: map1_stats,
       rank_a: match.match.team1.rank,
       rank_b: match.match.team2.rank,
-      map: match.match.maps[1].name,
+      map: match.match.maps[startIndex +1].name,
       format: match.match.format,
       additional_info: match.match.additionalInfo,
       a_past_series: a_pastSeries,

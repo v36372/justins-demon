@@ -64,6 +64,10 @@ var _createDataPoint = async function() {
       if (pastMatch == null) {
         pastMatch = await hltv.getMatch({id: id})
         if (pastMatch.additionalInfo.indexOf("forfeited ") !== -1) continue
+        if (pastMatch.statsId == undefined) {
+          console.log(id)
+          continue
+        }
         if (pastMatch.format.split(" ")[2] == '1') {
           pastStats = await hltv.getMatchMapStats({id: pastMatch.maps[0].statsId})
         } else{

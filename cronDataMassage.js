@@ -51,7 +51,6 @@ var _createDataPoint = async function() {
 
   var createPastSeries = async (matchIds) => {
     var pastSeries = []
-    var index = 0
     for (mid of matchIds) {
       var id = mid.id
       var pastMatch = await db.collection("matches").findOne({$and: [{stats:{$exists:true}},{players_stats:{$exists:true}},{players_extra_stats:{$exists:true}},{players_extra_stats_per_map:{$exists:true}},{teams_stats:{$exists:true}},{teams_extraStats:{$exists:true}},{teams_extraStatsPerMap:{$exists:true}}, {"match.id": id}]}).catch(errorHandler("finding 1 full data match with id = " + id))
@@ -64,6 +63,7 @@ var _createDataPoint = async function() {
       var team2 = pastMatch && pastMatch.match.team2
       if (pastMatch == null) {
         pastMatch = await hltv.getMatch({id: id})
+        if (pastMatch.additionalInfo.indexOf("forfeited ") !== -1) continue
         if (pastMatch.format.split(" ")[2] == '1') {
           pastStats = await hltv.getMatchMapStats({id: pastMatch.maps[0].statsId})
         } else{
@@ -78,7 +78,6 @@ var _createDataPoint = async function() {
         team2: team2,
         stats: pastStats,
       })
-      index++
     }
 
     return pastSeries

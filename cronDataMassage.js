@@ -133,9 +133,13 @@ var _createDataPoint = async function() {
     am_minus_bm= match.stats.team1.score-match.stats.team2.score
     total_map= match.stats.team1.score+match.stats.team2.score
   }
+  var winnerId = 0 
+  if (match.match.winnerTeam !== null) {
+    winnerId = match.match.winnerTeam.id
+  }
   var labels_m1 = {
     a_winner: Number(m1_result[0])>Number(m1_result[1]),
-    a_series_winner: match.match.winnerTeam.id == match.match.team1.id,
+    a_series_winner: winnerId == match.match.team1.id,
     total_round: Number(m1_result[0])+Number(m1_result[1]),
     ar_minus_br: Number(m1_result[0]) - Number(m1_result[1]),
     am_minus_bm: am_minus_bm,
@@ -148,7 +152,7 @@ var _createDataPoint = async function() {
   if (isNotBo1)
     labels_m2 = {
       a_winner: Number(m2_result[0])>Number(m2_result[1]),
-      a_series_winner: match.match.winnerTeam.id == match.match.team1.id,
+      a_series_winner: winnerId == match.match.team1.id,
       total_round: Number(m2_result[0])+Number(m2_result[1]),
       ar_minus_br: Number(m2_result[0]) - Number(m2_result[1]),
       am_minus_bm: am_minus_bm,

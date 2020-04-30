@@ -69,7 +69,7 @@ var _createDataPoint = async function() {
       var team2 = pastMatch && pastMatch.match.team2
       if (pastMatch == null) {
         pastMatch = await hltv.getMatch({id: id})
-        if (pastMatch.additionalInfo.indexOf("forfeited ") !== -1) continue
+        if (pastMatch.additionalInfo.indexOf("forfeit") !== -1) continue
         if (pastMatch.statsId == undefined) {
           console.log(id)
           continue

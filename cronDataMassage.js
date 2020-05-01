@@ -77,9 +77,9 @@ var _createDataPoint = async function() {
           continue
         }
         if (pastMatch.format.split(" ")[2] == '1') {
-          pastStats = await hltv.getMatchMapStats({id: pastMatch.maps[0].statsId}).catch(eHandler("getting map stats past series data point"))
+          pastStats = await hltv.getMatchMapStats({id: pastMatch.maps[0].statsId}).catch(function(err){console.error(err)})
         } else{
-          pastStats = await hltv.getMatchStats({id: pastMatch.statsId}).catch(eHandler("getting match stats series data point"))
+          pastStats = await hltv.getMatchStats({id: pastMatch.statsId}).catch(function(err){console.error(err)})
         }
         team1 = pastMatch.team1
         team2 = pastMatch.team2

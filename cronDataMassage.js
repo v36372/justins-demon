@@ -38,6 +38,7 @@ var _createDataPoint = async function() {
   const hltv = getHLTV("");
 
   var match = await db.collection("matches").findOne({$and: [{stats:{$exists:true}},{players_stats:{$exists:true}},{players_extra_stats:{$exists:true}},{players_extra_stats_per_map:{$exists:true}},{teams_stats:{$exists:true}},{teams_extraStats:{$exists:true}},{teams_extraStatsPerMap:{$exists:true}}, {datated: null}]}).catch(errorHandler("finding 1 match with dateted = null"))
+  if (match == null) return;
   console.log(match.match.id)
 
   var startIndex = 0
